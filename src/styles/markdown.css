@@ -1,120 +1,211 @@
-.custom-md {
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* 自定义按钮样式 */
+  .btn-regular-dark {
+    @apply flex items-center justify-center;
+    background-color: oklch(0.45 0.01 var(--hue));
+  }
+  
+  .btn-regular-dark:hover {
+    background-color: oklch(0.50 0.01 var(--hue));
+  }
+  
+  .btn-regular-dark:active {
+    background-color: oklch(0.55 0.01 var(--hue));
+  }
+  
+  .dark .btn-regular-dark {
+    background-color: oklch(0.30 0.02 var(--hue));
+  }
+  
+  .dark .btn-regular-dark:hover {
+    background-color: oklch(0.35 0.03 var(--hue));
+  }
+  
+  .dark .btn-regular-dark:active {
+    background-color: oklch(0.40 0.03 var(--hue));
+  }
+  
+  .btn-regular-dark.success {
+    background-color: oklch(0.75 0.14 var(--hue));
+  }
+  
+  .dark .btn-regular-dark.success {
+    background-color: oklch(0.75 0.14 var(--hue));
+  }
+
+  /* 全局可复用的链接样式 */
+  .link {
+    @apply relative bg-none font-medium underline decoration-dashed decoration-1 underline-offset-4;
+    color: var(--primary);
+    text-decoration-color: var(--link-underline);
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    transition: all 0.2s ease;
+    
+    &:is(:hover, :active) {
+      text-decoration: none;
+      background: var(--btn-plain-bg-hover);
+      border-bottom: 1px dashed var(--link-hover);
+    }
+  }
+
+  /* Markdown 特定样式 */
+  .custom-md {
     h1 {
-        @apply text-3xl;
+      @apply text-3xl;
     }
 
     h1, h2, h3, h4, h5, h6 {
+      .anchor {
+        @apply transition -m-0.5 ml-[0.2ch] p-0.5 select-none opacity-0 no-underline;
+        
+        .anchor-icon {
+          @apply mx-[0.45ch];
+        }
+      }
+
+      &:hover {
         .anchor {
-            @apply transition -m-0.5 ml-[0.2ch] p-0.5 select-none opacity-0 no-underline !important;
-
-            .anchor-icon {
-                @apply mx-[0.45ch] !important;
-            }
+          @apply opacity-100;
         }
-
-        &:hover {
-            .anchor {
-                @apply opacity-100 !important;
-            }
-        }
+      }
     }
 
     a:not(.no-styling) {
-        @apply relative bg-none link font-medium text-[var(--primary)]
-        underline decoration-[var(--link-underline)] decoration-1 decoration-dashed underline-offset-4;
-        box-decoration-break: clone;
-        -webkit-box-decoration-break: clone;
-    
-        &:hover, &:active {
-            @apply decoration-transparent;
-            background: var(--btn-plain-bg-hover);
-            border-bottom: 1px dashed var(--link-hover);
-            text-decoration: none;
-        }
+      @apply link;
     }
 
     code {
-        @apply bg-[var(--inline-code-bg)] text-[var(--inline-code-color)] px-1 py-0.5 rounded-md overflow-hidden;
+      @apply bg-[var(--inline-code-bg)] text-[var(--inline-code-color)] px-1 py-0.5 rounded-md overflow-hidden;
+      font-family: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
+      
+      &:before, &:after {
+        content: none;
+      }
 
-        font-family: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
+      counter-reset: line;
+      span.line {
         &:before {
-            content:none;
+          @apply text-white/25 mr-4 w-4 inline-block;
+          content: counter(line);
+          counter-increment: line;
+          direction: rtl;
         }
-        &:after {
-            content:none;
+        &:last-child:empty, 
+        &:last-child:has(> span:empty:only-child) {
+          display: none;
         }
-
-        counter-reset: line;
-        span.line {
-            &:before {
-                @apply text-white/25 mr-4 w-4 inline-block;
-                content: counter(line);
-                counter-increment: line;
-                direction: rtl;
-            }
-            &:last-child:empty, &:last-child:has(> span:empty:only-child) {
-                display: none;
-            }
-        }
+      }
     }
 
     .copy-btn {
-        all: initial;
-        @apply btn-regular-dark opacity-0 shadow-lg shadow-black/50 absolute active:scale-90 h-8 w-8 top-3 right-3 text-sm rounded-lg transition-all ease-in-out z-20 cursor-pointer;
-    }
-    .frame:hover .copy-btn {
-        opacity: 1;
+      all: initial;
+      @apply btn-regular-dark opacity-0 shadow-lg shadow-black/50 absolute active:scale-90 h-8 w-8 top-3 right-3 text-sm rounded-lg transition-all ease-in-out z-20 cursor-pointer;
+      
+      &-icon {
+        @apply absolute top-1/2 left-1/2 transition -translate-x-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none;
+      }
+      
+      .copy-icon {
+        @apply opacity-100 fill-white dark:fill-white/75;
+      }
+      
+      &.success .copy-icon {
+        @apply opacity-0 fill-[var(--deep-text)];
+      }
+      
+      .success-icon {
+        @apply opacity-0 fill-white;
+      }
+      
+      &.success .success-icon {
+        @apply opacity-100;
+      }
     }
 
-    .copy-btn-icon {
-        @apply absolute top-1/2 left-1/2 transition -translate-x-1/2 -translate-y-1/2 w-4 h-4 fill-white pointer-events-none;
-    }
-    .copy-btn .copy-icon {
-        @apply opacity-100 fill-white dark:fill-white/75;
-    }
-    .copy-btn.success .copy-icon {
-        @apply opacity-0 fill-[var(--deep-text)]
-    }
-    .copy-btn .success-icon {
-        @apply opacity-0 fill-white;
-    }
-    .copy-btn.success .success-icon {
-        @apply opacity-100
+    .frame:hover .copy-btn {
+      @apply opacity-100;
     }
 
     .expressive-code {
-        @apply my-4;
-        ::selection {
-            @apply bg-[var(--codeblock-selection)];
-        }
+      @apply my-4;
+      
+      ::selection {
+        @apply bg-[var(--codeblock-selection)];
+      }
     }
 
-
     ul, ol {
-        li::marker {
-            @apply text-[var(--primary)];
-        }
+      li::marker {
+        @apply text-[var(--primary)];
+      }
     }
 
     blockquote {
-        @apply not-italic border-transparent relative;
-        font-weight: inherit;
+      @apply not-italic border-transparent relative;
+      font-weight: inherit;
 
-        &:before {
-            @apply content-[''] absolute -left-1 block transition bg-[var(--btn-regular-bg)] h-full w-1 rounded-full;
-        }
+      &:before {
+        @apply content-[''] absolute -left-1 block transition bg-[var(--btn-regular-bg)] h-full w-1 rounded-full;
+      }
 
-        /* Remove the double quotes from default styles */
-        p:before, p:after {
-            @apply content-none;
-        }
-
+      p:before, p:after {
+        @apply content-none;
+      }
     }
 
     .katex-display-container {
-        max-width: 100%;
-        overflow-x: auto;
-        margin: 1em 0;
+      @apply max-w-full overflow-x-auto my-4;
     }
-    
+  }
+}
+
+/* 全局作用域中的 link 类 */
+a.link,
+.link {
+  @apply relative bg-none font-medium underline decoration-dashed decoration-1 underline-offset-4;
+  color: var(--primary);
+  text-decoration-color: var(--link-underline);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  transition: all 0.2s ease;
+  
+  &:is(:hover, :active) {
+    text-decoration: none;
+    background: var(--btn-plain-bg-hover);
+    border-bottom: 1px dashed var(--link-hover);
+  }
+}
+
+/* 其他全局样式 */
+.custom-md img, #post-cover img {
+  @apply cursor-zoom-in;
+}
+
+::selection {
+  background-color: var(--selection-bg);
+}
+
+.dash-line {
+  position: relative;
+}
+
+.dash-line::before {
+  content: "";
+  position: absolute;
+  width: 10%;
+  height: 100%;
+  left: calc(50% - 1px);
+  border-left: 2px dashed var(--line-color);
+  pointer-events: none;
+  transition: all 0.3s;
+  transform: translateY(-50%);
+}
+
+.collapsed {
+  height: var(--collapsedHeight);
 }

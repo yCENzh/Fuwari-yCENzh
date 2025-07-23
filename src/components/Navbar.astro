@@ -1,4 +1,5 @@
 ---
+// 导入必要的组件和模块
 import { Icon } from "astro-icon/components";
 import { navBarConfig, siteConfig } from "../config";
 import { LinkPresets } from "../constants/link-presets";
@@ -9,133 +10,192 @@ import Search from "./Search.svelte";
 import DisplaySettings from "./widget/DisplaySettings.svelte";
 import NavMenuPanel from "./widget/NavMenuPanel.astro";
 
+// 从组件属性中获取类名
 const className = Astro.props.class;
 
+// 处理导航链接：将预设ID转换为实际链接对象
 let links: NavBarLink[] = navBarConfig.links.map(
-	(item: NavBarLink | LinkPreset): NavBarLink => {
-		if (typeof item === "number") {
-			return LinkPresets[item];
-		}
-		return item;
-	},
+  (item: NavBarLink | LinkPreset): NavBarLink => {
+    if (typeof item === "number") {
+      return LinkPresets[item];
+    }
+    return item;
+  },
 );
 ---
+
+<!-- 导航栏容器 -->
 <div id="navbar" class="z-50 onload-animation">
-    <div class="absolute h-8 left-0 right-0 -top-8 bg-[var(--card-bg)] transition"></div> <!-- used for onload animation -->
-    <div class:list={[
-        className,
-        "card-base !overflow-visible max-w-[var(--page-width)] h-[4.5rem] !rounded-t-none mx-auto flex items-center justify-between px-4"]}>
-        <a href={url('/')} class="btn-plain scale-animation rounded-lg h-[3.25rem] px-5 font-bold active:scale-95">
-            <div class="flex flex-row text-[var(--primary)] items-center text-md">
-                <Icon name="material-symbols:home-outline-rounded" class="text-[1.75rem] mb-1 mr-2" />
-                {siteConfig.title}
-            </div>
-        </a>
-        <div class="hidden md:flex">
-            {links.map((l) => {
-                return <a aria-label={l.name} href={l.external ? l.url : url(l.url)} target={l.external ? "_blank" : null}
-                          class="btn-plain scale-animation rounded-lg h-11 font-bold px-5 active:scale-95"
-                >
-                    <div class="flex items-center">
-                        {l.name}
-                        {l.external && <Icon name="fa6-solid:arrow-up-right-from-square" class="text-[0.875rem] transition -translate-y-[1px] ml-1 text-black/[0.2] dark:text-white/[0.2]"></Icon>}
-                    </div>
-                </a>;
-            })}
-        </div>
-        <div class="flex">
-            <!--<SearchPanel client:load>-->
-            <Search client:only="svelte"></Search>
-            {!siteConfig.themeColor.fixed && (
-                    <button aria-label="Display Settings" class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90" id="display-settings-switch">
-                        <Icon name="material-symbols:palette-outline" class="text-[1.25rem]"></Icon>
-                    </button>
+  <!-- 加载动画背景元素 -->
+  <div class="absolute h-8 left-0 right-0 -top-8 bg-[var(--card-bg)] transition"></div>
+  
+  <!-- 导航栏主容器 -->
+  <div class:list={[
+    className,
+    "card-base !overflow-visible max-w-[var(--page-width)] h-[4.5rem] !rounded-t-none mx-auto flex items-center justify-between px-4"
+  ]}>
+    <!-- 网站标题/Logo -->
+    <a href={url('/')} class="btn-plain scale-animation rounded-lg h-[3.25rem] px-5 font-bold active:scale-95">
+      <div class="flex flex-row text-[var(--primary)] items-center text-md">
+        <Icon name="material-symbols:home-outline-rounded" class="text-[1.75rem] mb-1 mr-2" />
+        {siteConfig.title}
+      </div>
+    </a>
+    
+    <!-- 桌面端导航链接 -->
+    <div class="hidden md:flex">
+      {links.map((l) => (
+        <a 
+          aria-label={l.name} 
+          href={l.external ? l.url : url(l.url)} 
+          target={l.external ? "_blank" : null}
+          class="btn-plain scale-animation rounded-lg h-11 font-bold px-5 active:scale-95"
+        >
+          <div class="flex items-center">
+            {l.name}
+            {/* 外部链接图标 */}
+            {l.external && (
+              <Icon 
+                name="fa6-solid:arrow-up-right-from-square" 
+                class="text-[0.875rem] transition -translate-y-[1px] ml-1 text-black/[0.2] dark:text-white/[0.2]"
+              ></Icon>
             )}
-            <LightDarkSwitch client:only="svelte"></LightDarkSwitch>
-            <button aria-label="Menu" name="Nav Menu" class="btn-plain scale-animation rounded-lg w-11 h-11 active:scale-90 md:!hidden" id="nav-menu-switch">
-                <Icon name="material-symbols:menu-rounded" class="text-[1.25rem]"></Icon>
-            </button>
-        </div>
-        <NavMenuPanel links={links}></NavMenuPanel>
-        <DisplaySettings client:only="svelte"></DisplaySettings>
+          </div>
+        </a>
+      ))}
     </div>
+    
+    <!-- 功能按钮区域 -->
+    <div class="flex">
+      {/* 搜索组件 */}
+      <Search client:only="svelte"></Search>
+      
+      {/* 显示设置按钮 - 仅在主题颜色未固定时显示 */}
+      {!siteConfig.themeColor.fixed && (
+        <button 
+          aria-label="Display Settings" 
+          class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90" 
+          id="display-settings-switch"
+        >
+          <Icon name="material-symbols:palette-outline" class="text-[1.25rem]"></Icon>
+        </button>
+      )}
+      
+      {/* 亮/暗模式切换组件 */}
+      <LightDarkSwitch client:only="svelte"></LightDarkSwitch>
+      
+      {/* 移动端菜单按钮 - 仅在移动视图显示 */}
+      <button 
+        aria-label="Menu" 
+        name="Nav Menu" 
+        class="btn-plain scale-animation rounded-lg w-11 h-11 active:scale-90 md:!hidden" 
+        id="nav-menu-switch"
+      >
+        <Icon name="material-symbols:menu-rounded" class="text-[1.25rem]"></Icon>
+      </button>
+    </div>
+    
+    {/* 移动端导航菜单面板 */}
+    <NavMenuPanel links={links}></NavMenuPanel>
+    
+    {/* 显示设置面板 */}
+    <DisplaySettings client:only="svelte"></DisplaySettings>
+  </div>
 </div>
 
+<!-- 客户端脚本 -->
 <script>
-function switchTheme() {
+// 使用DOMContentLoaded确保DOM完全加载
+document.addEventListener('DOMContentLoaded', () => {
+  /**
+   * 切换网站主题（亮/暗模式）
+   */
+  function switchTheme() {
     if (localStorage.theme === 'dark') {
-        document.documentElement.classList.remove('dark');
-        localStorage.theme = 'light';
+      document.documentElement.classList.remove('dark');
+      localStorage.theme = 'light';
     } else {
-        document.documentElement.classList.add('dark');
-        localStorage.theme = 'dark';
+      document.documentElement.classList.add('dark');
+      localStorage.theme = 'dark';
     }
-}
-
-function loadButtonScript() {
-    let switchBtn = document.getElementById("scheme-switch");
-    if (switchBtn) {
-        switchBtn.onclick = function () {
-            switchTheme()
-        };
-    }
-
-    let settingBtn = document.getElementById("display-settings-switch");
-    if (settingBtn) {
-        settingBtn.onclick = function () {
-            let settingPanel = document.getElementById("display-setting");
-            if (settingPanel) {
-                settingPanel.classList.toggle("float-panel-closed");
-            }
-        };
-    }
-
-    let menuBtn = document.getElementById("nav-menu-switch");
-    if (menuBtn) {
-        menuBtn.onclick = function () {
-            let menuPanel = document.getElementById("nav-menu-panel");
-            if (menuPanel) {
-                menuPanel.classList.toggle("float-panel-closed");
-            }
-        };
-    }
-}
-
-loadButtonScript();
+  }
+  
+  // 绑定显示设置面板开关
+  const settingBtn = document.getElementById("display-settings-switch");
+  if (settingBtn) {
+    settingBtn.addEventListener('click', () => {
+      const settingPanel = document.getElementById("display-setting");
+      if (settingPanel) {
+        settingPanel.classList.toggle("float-panel-closed");
+      }
+    });
+  }
+  
+  // 绑定移动菜单开关
+  const menuBtn = document.getElementById("nav-menu-switch");
+  if (menuBtn) {
+    menuBtn.addEventListener('click', () => {
+      const menuPanel = document.getElementById("nav-menu-panel");
+      if (menuPanel) {
+        menuPanel.classList.toggle("float-panel-closed");
+      }
+    });
+  }
+  
+  // 注意：原代码中尝试绑定scheme-switch元素，但在当前HTML结构中不存在
+  // 此功能可能由LightDarkSwitch.svelte组件处理，因此已移除相关代码
+});
 </script>
 
-{import.meta.env.PROD && <script is:inline define:vars={{scriptUrl: url('/pagefind/pagefind.js')}}>
-async function loadPagefind() {
-    try {
+<!-- Pagefind搜索库加载脚本（仅生产环境） -->
+{import.meta.env.PROD && (
+  <script 
+    is:inline 
+    define:vars={{scriptUrl: url('/pagefind/pagefind.js')}}
+  >
+    // 异步加载Pagefind搜索库
+    async function loadPagefind() {
+      try {
+        // 检查脚本是否存在
         const response = await fetch(scriptUrl, { method: 'HEAD' });
         if (!response.ok) {
-            throw new Error(`Pagefind script not found: ${response.status}`);
+          throw new Error(`Pagefind脚本未找到: ${response.status}`);
         }
 
+        // 动态导入Pagefind
         const pagefind = await import(scriptUrl);
 
+        // 配置Pagefind选项
         await pagefind.options({
-            excerptLength: 20
+          excerptLength: 20
         });
 
+        // 将Pagefind挂载到全局对象
         window.pagefind = pagefind;
 
+        // 派发自定义事件通知Pagefind已加载
         document.dispatchEvent(new CustomEvent('pagefindready'));
-        console.log('Pagefind loaded and initialized successfully, event dispatched.');
-    } catch (error) {
-        console.error('Failed to load Pagefind:', error);
+        console.log('Pagefind加载并初始化成功，事件已派发');
+      } catch (error) {
+        console.error('加载Pagefind失败:', error);
+        
+        // 提供回退的Pagefind对象
         window.pagefind = {
-            search: () => Promise.resolve({ results: [] }),
-            options: () => Promise.resolve(),
+          search: () => Promise.resolve({ results: [] }),
+          options: () => Promise.resolve(),
         };
+        
+        // 派发加载错误事件
         document.dispatchEvent(new CustomEvent('pagefindloaderror'));
-        console.log('Pagefind load error, event dispatched.');
+        console.log('Pagefind加载错误，事件已派发');
+      }
     }
-}
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadPagefind);
-} else {
-    loadPagefind();
-}
-</script>}
+    // 根据文档状态决定加载时机
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadPagefind);
+    } else {
+      loadPagefind();
+    }
+  </script>
+)}

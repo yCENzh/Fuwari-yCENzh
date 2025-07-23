@@ -1,49 +1,119 @@
 ---
+// 导入图标组件
 import { Icon } from "astro-icon/components";
+// 导入客户端交互需要的库
+import { onMount } from "astro";
 ---
 
-<!-- There can't be a filter on parent element, or it will break `fixed` -->
+<!-- 返回顶部按钮容器 -->
 <div class="back-to-top-wrapper hidden lg:block">
-    <div id="back-to-top-btn" class="back-to-top-btn hide flex items-center rounded-2xl overflow-hidden transition" onclick="backToTop()">
-        <button aria-label="Back to Top" class="btn-card h-[3.75rem] w-[3.75rem]">
-            <Icon name="material-symbols:keyboard-arrow-up-rounded" class="mx-auto"></Icon>
-        </button>
-    </div>
+    <!-- 返回顶部按钮 -->
+    <button 
+        id="back-to-top-btn" 
+        aria-label="Back to Top"
+        class="back-to-top-btn flex items-center rounded-2xl overflow-hidden transition"
+    >
+        <div class="btn-card h-[3.75rem] w-[3.75rem] flex items-center justify-center">
+            <Icon name="material-symbols:keyboard-arrow-up-rounded" class="mx-auto text-2xl" />
+        </div>
+    </button>
 </div>
 
 <style lang="stylus">
-.back-to-top-wrapper
-    width: 3.75rem
-    height: 3.75rem
-    position: absolute
-    right: 0
-    top: 0
-    pointer-events: none
+.back-to-top-wrapper {
+    /* 容器样式 */
+    width: 3.75rem;
+    height: 3.75rem;
+    position: absolute;
+    right: 0;
+    top: 0;
+    pointer-events: none;
+    z-index: 100; /* 确保按钮在其他内容之上 */
+}
 
-.back-to-top-btn
-    color: var(--primary)
-    font-size: 2.25rem
-    font-weight: bold
-    border: none
-    position: fixed
-    bottom: 10rem
-    opacity: 1
-    cursor: pointer
-    transform: translateX(5rem)
-    pointer-events: auto
-    i
-        font-size: 1.75rem
-    &.hide
-        transform: translateX(5rem) scale(0.9)
-        opacity: 0
-        pointer-events: none
-    &:active
-      transform: translateX(5rem) scale(0.9)
-
+.back-to-top-btn {
+    /* 按钮基础样式 */
+    color: var(--primary);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    box-shadow: var(--shadow-md);
+    font-size: 2.25rem;
+    font-weight: bold;
+    border: none;
+    position: fixed;
+    bottom: 5rem; /* 调整位置，距离底部更近 */
+    right: 2rem; /* 右侧位置 */
+    opacity: 0;
+    cursor: pointer;
+    transform: translateY(2rem) scale(0.9);
+    pointer-events: auto;
+    transition: 
+        opacity 0.3s ease, 
+        transform 0.3s ease,
+        background 0.2s ease;
+    
+    &:hover {
+        /* 悬停效果 */
+        background: var(--btn-plain-bg-hover);
+        transform: translateY(2rem) scale(1.05);
+    }
+    
+    &:active {
+        /* 点击效果 */
+        transform: translateY(2rem) scale(0.95);
+        background: var(--btn-plain-bg-active);
+    }
+    
+    &.visible {
+        /* 按钮可见时的状态 */
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
 </style>
 
-<script is:raw is:inline>
-function backToTop() {
-    window.scroll({ top: 0, behavior: 'smooth' });
-}
+<script>
+// 当组件在客户端加载时执行
+onMount(() => {
+    // 获取按钮元素
+    const backToTopBtn = document.getElementById('back-to-top-btn');
+    
+    // 滚动到页面顶部的函数
+    const scrollToTop = () => {
+        window.scroll({
+            top: 0,
+            behavior: 'smooth'
+        });
+    };
+    
+    // 更新按钮可见性的函数
+    const updateButtonVisibility = () => {
+        // 当页面滚动超过300px时显示按钮
+        if (window.scrollY > 300) {
+            backToTopBtn.classList.add('visible');
+        } else {
+            backToTopBtn.classList.remove('visible');
+        }
+    };
+    
+    // 添加点击事件监听
+    backToTopBtn.addEventListener('click', scrollToTop);
+    
+    // 添加滚动事件监听（带防抖）
+    let scrollTimeout;
+    window.addEventListener('scroll', () => {
+        // 使用防抖技术优化性能
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(updateButtonVisibility, 50);
+    });
+    
+    // 初始检查按钮状态
+    updateButtonVisibility();
+    
+    // 组件卸载时清理事件监听
+    return () => {
+        window.removeEventListener('scroll', updateButtonVisibility);
+        backToTopBtn.removeEventListener('click', scrollToTop);
+    };
+});
 </script>

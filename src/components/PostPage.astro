@@ -1,28 +1,50 @@
 ---
+// 导入类型定义和工具函数
 import type { CollectionEntry } from "astro:content";
 import { getPostUrlBySlug } from "@utils/url-utils";
 import PostCard from "./PostCard.astro";
 
+// 从props中获取page对象
 const { page } = Astro.props;
 
-let delay = 0;
-const interval = 50;
+// 动画配置
+const ANIMATION_DELAY_START = 0; // 初始延迟
+const ANIMATION_DELAY_INTERVAL = 50; // 每张卡片之间的延迟间隔
+
+// 修复泛型语法问题：添加空格避免尖括号被误解析为JSX
+type PostEntry = CollectionEntry<"posts">;
 ---
-<div class="transition flex flex-col rounded-[var(--radius-large)] bg-[var(--card-bg)] py-1 md:py-0 md:bg-transparent md:gap-4 mb-4">
-    {page.data.map((entry: CollectionEntry<"posts">) => (
+<!-- 文章列表容器 -->
+<div 
+  class="transition flex flex-col rounded-[var(--radius-large)] 
+         bg-[var(--card-bg)] py-1 md:py-0 md:bg-transparent 
+         md:gap-4 mb-4"
+>
+  {
+    // 遍历文章数据
+    page.data.map((entry: PostEntry, index: number) => {
+      // 计算当前卡片的动画延迟时间
+      const delay = ANIMATION_DELAY_START + index * ANIMATION_DELAY_INTERVAL;
+      
+      return (
+        // 渲染文章卡片组件
         <PostCard
-                entry={entry}
-                title={entry.data.title}
-                tags={entry.data.tags}
-                category={entry.data.category}
-                published={entry.data.published}
-                updated={entry.data.updated}
-                url={getPostUrlBySlug(entry.slug)}
-                image={entry.data.image}
-                description={entry.data.description}
-                draft={entry.data.draft}
-                class:list="onload-animation"
-                style={`animation-delay: calc(var(--content-delay) + ${delay++ * interval}ms);`}
-        ></PostCard>
-    ))}
+          key={entry.slug}  // 添加唯一key值提升性能
+          entry={entry}
+          title={entry.data.title}
+          tags={entry.data.tags}
+          category={entry.data.category}
+          published={entry.data.published}
+          updated={entry.data.updated}
+          url={getPostUrlBySlug(entry.slug)}
+          image={entry.data.image}
+          description={entry.data.description}
+          draft={entry.data.draft}
+          pinned={entry.data.pinned}
+          class:list="onload-animation"
+          style={`animation-delay: calc(var(--content-delay) + ${delay}ms);`}
+        />
+      );
+    })
+  }
 </div>

@@ -5,78 +5,136 @@ import { i18n } from "../i18n/translation";
 import { formatDateToYYYYMMDD } from "../utils/date-utils";
 import { getCategoryUrl, getTagUrl } from "../utils/url-utils";
 
+// 组件属性接口定义
 interface Props {
-	class: string;
-	published: Date;
-	updated?: Date;
-	tags: string[];
-	category: string | null;
-	hideTagsForMobile?: boolean;
-	hideUpdateDate?: boolean;
+  class: string; // 外部传入的CSS类名
+  published: Date; // 文章发布日期（必需）
+  updated?: Date; // 文章最后更新日期（可选）
+  tags: string[]; // 文章标签数组
+  category: string | null; // 文章分类（可为空）
+  hideTagsForMobile?: boolean; // 是否在移动端隐藏标签
+  hideUpdateDate?: boolean; // 是否隐藏更新日期
 }
+
+// 解构Astro.props获取参数
 const {
-	published,
-	updated,
-	tags,
-	category,
-	hideTagsForMobile = false,
-	hideUpdateDate = false,
+  class: className, // 重命名避免与JS关键字冲突
+  published,
+  updated,
+  tags,
+  category,
+  hideTagsForMobile = false, // 默认在移动端显示标签
+  hideUpdateDate = false, // 默认显示更新日期
 } = Astro.props;
-const className = Astro.props.class;
+
+// 预计算更新日期是否需要显示
+const shouldShowUpdated = 
+  !hideUpdateDate && // 未设置隐藏更新日期
+  updated && // 存在更新日期
+  updated.getTime() !== published.getTime(); // 更新日期与发布日期不同
+
+// 预计算是否有标签
+const hasTags = tags && tags.length > 0;
 ---
 
-<div class:list={["flex flex-wrap text-neutral-500 dark:text-neutral-400 items-center gap-4 gap-x-4 gap-y-2", className]}>
-    <!-- publish date -->
-    <div class="flex items-center">
-        <div class="meta-icon"
-        >
-            <Icon name="material-symbols:calendar-today-outline-rounded" class="text-xl"></Icon>
-        </div>
-        <span class="text-50 text-sm font-medium">{formatDateToYYYYMMDD(published)}</span>
+<!-- 
+  博客文章元数据容器
+  显示：发布日期、更新日期、分类和标签
+  响应式设计：在移动端可隐藏标签
+-->
+<div 
+  class:list={[
+    "flex flex-wrap text-neutral-500 dark:text-neutral-400",
+    "items-center gap-4 gap-x-4 gap-y-2",
+    className
+  ]}
+>
+  <!-- 发布日期 -->
+  <div class="flex items-center">
+    <div class="meta-icon">
+      <!-- 日历图标 -->
+      <Icon name="material-symbols:calendar-today-outline-rounded" class="text-xl" />
     </div>
+    <!-- 格式化后的日期 -->
+    <span class="text-50 text-sm font-medium">
+      {formatDateToYYYYMMDD(published)}
+    </span>
+  </div>
 
-    <!-- update date -->
-    {!hideUpdateDate && updated && updated.getTime() !== published.getTime() && (
-        <div class="flex items-center">
-            <div class="meta-icon"
+  <!-- 更新日期（条件渲染） -->
+  {shouldShowUpdated && (
+    <div class="flex items-center">
+      <div class="meta-icon">
+        <!-- 编辑图标 -->
+        <Icon name="material-symbols:edit-calendar-outline-rounded" class="text-xl" />
+      </div>
+      <!-- 格式化后的更新日期 -->
+      <span class="text-50 text-sm font-medium">
+        {formatDateToYYYYMMDD(updated)}
+      </span>
+    </div>
+  )}
+
+  <!-- 文章分类 -->
+  <div class="flex items-center">
+    <div class="meta-icon">
+      <!-- 书本图标 -->
+      <Icon name="material-symbols:book-2-outline-rounded" class="text-xl" />
+    </div>
+    <div class="flex flex-row flex-nowrap items-center">
+      <!-- 分类链接 -->
+      <a 
+        href={getCategoryUrl(category)} 
+        aria-label={`View all posts in the ${category} category`}
+        class="link-lg transition text-50 text-sm font-medium
+               hover:text-[var(--primary)] dark:hover:text-[var(--primary)] whitespace-nowrap"
+      >
+        {/* 显示分类名称，若无分类则显示"未分类" */}
+        {category || i18n(I18nKey.uncategorized)}
+      </a>
+    </div>
+  </div>
+
+  <!-- 文章标签 -->
+  <div 
+    class:list={[
+      "items-center",
+      {
+        "flex": !hideTagsForMobile, // 在PC端和未隐藏时显示
+        "hidden md:flex": hideTagsForMobile // 在移动端隐藏，中等屏幕以上显示
+      }
+    ]}
+  >
+    <div class="meta-icon">
+      <!-- 标签图标 -->
+      <Icon name="material-symbols:tag-rounded" class="text-xl" />
+    </div>
+    <div class="flex flex-row flex-nowrap items-center">
+      {hasTags ? (
+        // 有标签时渲染标签列表
+        tags.map((tag, index) => (
+          <>
+            {/* 在标签之间添加分隔符（第一个标签前不添加） */}
+            {index > 0 && (
+              <div class="mx-1.5 text-[var(--meta-divider)] text-sm">/</div>
+            )}
+            {/* 单个标签链接 */}
+            <a
+              href={getTagUrl(tag)}
+              aria-label={`View all posts with the ${tag.trim()} tag`}
+              class="link-lg transition text-50 text-sm font-medium
+                     hover:text-[var(--primary)] dark:hover:text-[var(--primary)] whitespace-nowrap"
             >
-                <Icon name="material-symbols:edit-calendar-outline-rounded" class="text-xl"></Icon>
-            </div>
-            <span class="text-50 text-sm font-medium">{formatDateToYYYYMMDD(updated)}</span>
-        </div>
-    )}
-
-    <!-- categories -->
-    <div class="flex items-center">
-        <div class="meta-icon"
-        >
-            <Icon name="material-symbols:book-2-outline-rounded" class="text-xl"></Icon>
-        </div>
-        <div class="flex flex-row flex-nowrap items-center">
-            <a href={getCategoryUrl(category)} aria-label={`View all posts in the ${category} category`}
-               class="link-lg transition text-50 text-sm font-medium
-                            hover:text-[var(--primary)] dark:hover:text-[var(--primary)] whitespace-nowrap">
-                {category || i18n(I18nKey.uncategorized)}
+              {tag.trim()}
             </a>
+          </>
+        ))
+      ) : (
+        // 无标签时显示"无标签"文本
+        <div class="transition text-50 text-sm font-medium">
+          {i18n(I18nKey.noTags)}
         </div>
+      )}
     </div>
-
-    <!-- tags -->
-    <div class:list={["items-center", {"flex": !hideTagsForMobile, "hidden md:flex": hideTagsForMobile}]}>
-        <div class="meta-icon"
-        >
-            <Icon name="material-symbols:tag-rounded" class="text-xl"></Icon>
-        </div>
-        <div class="flex flex-row flex-nowrap items-center">
-            {(tags && tags.length > 0) && tags.map((tag, i) => (
-                <div class:list={[{"hidden": i == 0}, "mx-1.5 text-[var(--meta-divider)] text-sm"]}>/</div>
-                <a href={getTagUrl(tag)} aria-label={`View all posts with the ${tag.trim()} tag`}
-                   class="link-lg transition text-50 text-sm font-medium
-                                hover:text-[var(--primary)] dark:hover:text-[var(--primary)] whitespace-nowrap">
-                    {tag.trim()}
-                </a>
-            ))}
-            {!(tags && tags.length > 0) && <div class="transition text-50 text-sm font-medium">{i18n(I18nKey.noTags)}</div>}
-        </div>
-    </div>
+  </div>
 </div>

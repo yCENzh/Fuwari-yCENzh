@@ -7,6 +7,8 @@ import swup from "@swup/astro";
 import expressiveCode from "astro-expressive-code";
 import icon from "astro-icon";
 import { defineConfig } from "astro/config";
+//import cloudflare from '@astrojs/cloudflare';
+//import netlify from '@astrojs/netlify';
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeComponents from "rehype-components"; /* Render the custom directive content */
 import rehypeKatex from "rehype-katex";
@@ -22,13 +24,32 @@ import { GithubCardComponent } from "./src/plugins/rehype-component-github-card.
 import { parseDirectiveNode } from "./src/plugins/remark-directive-rehype.js";
 import { remarkExcerpt } from "./src/plugins/remark-excerpt.js";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
+import fuwariLinkCard from "./src/plugins/fuwari-link-card.ts";
 import { pluginCustomCopyButton } from "./src/plugins/expressive-code/custom-copy-button.js";
+//import mdx from '@astrojs/mdx';
 
 // https://astro.build/config
 export default defineConfig({
-	site: "https://fuwari.vercel.app/",
+	integrations: [
+		tailwind(/*{
+        // 添加此配置
+        config: {
+        applyComplexClasses: true,
+        }
+        }*/),
+		//mdx()
+	],
+	//adapter: cloudflare(),
+	//adapter: netlify(),
+	site: "https://fuwari-17l.pages.dev/",
 	base: "/",
 	trailingSlash: "always",
+
+	/*prefetch: {
+          prefetchAll: true,
+          defaultStrategy: 'hover',
+        },*/
+	
 	integrations: [
 		tailwind({
 			nesting: true,
@@ -38,7 +59,7 @@ export default defineConfig({
 			animationClass: "transition-swup-", // see https://swup.js.org/options/#animationselector
 			// the default value `transition-` cause transition delay
 			// when the Tailwind class `transition-all` is used
-			containers: ["main", "#toc"],
+			containers: ["main", "#toc", "#series"],
 			smoothScrolling: true,
 			cache: true,
 			preload: true,
@@ -49,6 +70,7 @@ export default defineConfig({
 		}),
 		icon({
 			include: {
+				mdi: ["*"],
 				"preprocess: vitePreprocess(),": ["*"],
 				"fa6-brands": ["*"],
 				"fa6-regular": ["*"],
@@ -101,6 +123,9 @@ export default defineConfig({
 		}),
         svelte(),
 		sitemap(),
+		fuwariLinkCard({
+          internalLink: { enabled: true },
+        }),
 	],
 	markdown: {
 		remarkPlugins: [

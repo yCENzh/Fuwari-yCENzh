@@ -1,3 +1,101 @@
+# 🍥Fuwari
+
+基于 [Astro](https://astro.build) 开发的静态博客模板。
+
+[**🖥️在线预览（Vercel）**](https://fuwari.vercel.app)
+[**🖥️作者博客**](https://fuwari-17l.pages.dev/)
+
+![Preview Image](https://raw.githubusercontent.com/saicaca/resource/main/fuwari/home.png)
+
+## 食用方法(基础版构建
+1.  [Fork本项目](https://github.com/yCENzh/fuwari/fork) (PS:请不要勾选Copy the master branch only选项)
+2.  使用 [Cloudflare](https://dash.cloudflare.com/) 提供的Pages -> 创建一个Pages -> 导入现有Git存储库 -> 将生产分支更改为Build,框架预设选择Astro,再将构建命令npm run build更改为pnpm run build -> 保存并构建
+3.  没了,非常的简单,后续食用方法请查看我的博客
+
+## 更新日志(25-07-05)
+1. 修复了上古时期的markdown.css中link及btn-regular-dark类未定义(应该是吧)导致构建有概率失败的bug(PS:好消息修好了,坏消息修好了)
+
+## ✨ 功能特性
+
+- [x] 基于 Astro 和 Tailwind CSS 开发
+- [x] 流畅的动画和页面过渡
+- [x] 亮色 / 暗色模式
+- [x] 自定义主题色和横幅图片
+- [x] 响应式设计
+- [ ] 评论(e其实可以用[giscus](https://giscus.app/)的)
+- [x] 搜索
+- [x] 文内目录
+
+## 👀 要求
+
+- Node.js <= 22
+- pnpm <= 9
+
+## PS:部署方法可以参照我博客的文章
+## 🚀 方法1
+
+使用 [create-fuwari](https://github.com/L4Ph/create-fuwari) 在本地初始化项目。
+
+```sh
+# npm
+npm create fuwari@latest
+
+# yarn
+yarn create fuwari
+
+# pnpm
+pnpm create fuwari@latest
+
+# bun
+bun create fuwari@latest
+
+# deno
+deno run -A npm:create-fuwari@latest
+```
+
+1. 通过配置文件 `src/config.ts` 自定义博客
+2. 执行 `pnpm new-post <filename>` 创建新文章，并在 `src/content/posts/` 目录中编辑
+3. 参考[官方指南](https://docs.astro.build/zh-cn/guides/deploy/)将博客部署至 Vercel, Netlify, GitHub Pages 等；部署前需编辑 `astro.config.mjs` 中的站点设置。
+
+## 🚀 方法2
+
+1. 使用此模板[生成新仓库](https://github.com/saicaca/fuwari/generate)或 Fork 此仓库
+2. 进行本地开发，Clone 新的仓库，执行 `pnpm install` 和 `pnpm add sharp` 以安装依赖  
+   - 若未安装 [pnpm](https://pnpm.io)，执行 `npm install -g pnpm`
+3. 通过配置文件 `src/config.ts` 自定义博客
+4. 执行 `pnpm new-post <filename>` 创建新文章，并在 `src/content/posts/` 目录中编辑
+5. 参考[官方指南](https://docs.astro.build/zh-cn/guides/deploy/)将博客部署至 Vercel, Netlify, GitHub Pages 等；部署前需编辑 `astro.config.mjs` 中的站点设置。
+
+## ⚙️ 文章 Frontmatter
+
+```yaml
+---
+title: My First Blog Post
+published: 2023-09-09
+description: This is the first post of my new Astro blog.
+image: ./cover.jpg
+tags: [Foo, Bar]
+category: Front-end
+draft: false
+lang: jp      # 仅当文章语言与 `config.ts` 中的网站语言不同时需要设置
+---
+```
+
+## 🧞 指令
+
+下列指令均需要在项目根目录执行：
+
+| Command                           | Action                            |
+|:----------------------------------|:----------------------------------|
+| `pnpm install` 并 `pnpm add sharp` | 安装依赖                              |
+| `pnpm dev`                        | 在 `localhost:4321` 启动本地开发服务器      |
+| `pnpm build`                      | 构建网站至 `./dist/`                   |
+| `pnpm preview`                    | 本地预览已构建的网站                        |
+| `pnpm new-post <filename>`        | 创建新文章                             |
+| `pnpm astro ...`                  | 执行 `astro add`, `astro check` 等指令 |
+| `pnpm astro --help`               | 显示 Astro CLI 帮助                   |
+
+
 # 🍥Fuwari  
 ![Node.js >= 20](https://img.shields.io/badge/node.js-%3E%3D20-brightgreen) 
 ![pnpm >= 9](https://img.shields.io/badge/pnpm-%3E%3D9-blue) 
@@ -11,11 +109,11 @@ A static blog template built with [Astro](https://astro.build).
 ![Preview Image](https://raw.githubusercontent.com/saicaca/resource/main/fuwari/home.png)
 
 🌏 README in
-[**中文**](https://github.com/saicaca/fuwari/blob/main/docs/README.zh-CN.md) /
-[**日本語**](https://github.com/saicaca/fuwari/blob/main/docs/README.ja.md) /
-[**한국어**](https://github.com/saicaca/fuwari/blob/main/docs/README.ko.md) /
-[**Español**](https://github.com/saicaca/fuwari/blob/main/docs/README.es.md) /
-[**ไทย**](https://github.com/saicaca/fuwari/blob/main/docs/README.th.md) (Provided by the community and may not always be up-to-date)
+[**中文**](https://github.com/yCENzh/fuwari/blob/main/docs/README.zh-CN.md) /
+[**日本語**](https://github.com/yCENzh/fuwari/blob/main/docs/README.ja.md) /
+[**한국어**](https://github.com/yCENzh/fuwari/blob/main/docs/README.ko.md) /
+[**Español**](https://github.com/yCENzh/fuwari/blob/main/docs/README.es.md) /
+[**ไทย**](https://github.com/yCENzh/fuwari/blob/main/docs/README.th.md) (Provided by the community and may not always be up-to-date)
 
 ## ✨ Features
 
