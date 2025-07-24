@@ -1,0 +1,212 @@
+---
+// 接收标题数据
+interface Props {
+  headings: {
+    depth: number;
+    slug: string;
+    text: string;
+  }[];
+}
+
+const { headings } = Astro.props;
+
+// 获取所有标题级别 (h1-h6)
+const filteredHeadings = headings.filter(heading => heading.depth >= 1 && heading.depth <= 6);
+---
+
+{filteredHeadings.length > 0 && (
+  <div class="mb-5 rounded-[var(--radius-large)] overflow-hidden bg-black/5 dark:bg-white/5 backdrop-blur-sm">
+    <!-- 目录标题栏 -->
+    <button 
+      class="toc-toggle w-full px-4 py-3 flex items-center justify-between text-sm font-medium text-black/70 dark:text-white/70 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+      type="button"
+    >
+      <span class="flex items-center gap-2">
+        <div class="h-5 w-5 rounded-md bg-black/10 dark:bg-white/10 text-black/50 dark:text-white/50 flex items-center justify-center">
+          📋
+        </div>
+        目录
+      </span>
+      <span class="toc-arrow text-xs text-black/50 dark:text-white/50 transition-transform duration-300 ease-in-out">▼</span>
+    </button>
+    
+    <!-- 目录内容 -->
+    <div class="toc-content max-h-0 overflow-y-auto px-4 border-t border-black/10 dark:border-white/10 transition-all duration-300 ease-in-out">
+      <nav class="pt-3 pb-4">
+        {filteredHeadings.map((heading) => {
+          // 根据标题级别设置缩进和样式
+          const indentClass = heading.depth === 1 ? '' : 
+                             heading.depth === 2 ? 'ml-2' :
+                             heading.depth === 3 ? 'ml-4' :
+                             heading.depth === 4 ? 'ml-6' :
+                             heading.depth === 5 ? 'ml-8' : 'ml-10';
+          
+          const sizeClass = heading.depth === 1 ? 'text-sm font-bold' :
+                           heading.depth === 2 ? 'text-sm font-medium' :
+                           heading.depth === 3 ? 'text-xs font-medium' :
+                           'text-xs';
+          
+          return (
+            <a
+              href={`#${heading.slug}`}
+              class={`toc-link block py-2 text-black/60 dark:text-white/60 hover:text-[var(--primary)] transition-colors ${indentClass} ${sizeClass}`}
+              data-heading-id={heading.slug}
+            >
+              {heading.text}
+            </a>
+          );
+        })}
+      </nav>
+    </div>
+  </div>
+)}
+
+<style>
+  .toc-link.active {
+    color: var(--primary);
+    font-weight: 600;
+  }
+  
+  /* 展开状态的动画 - 增加最大高度以支持更多标题 */
+  .toc-content.expanded {
+    max-height: 80vh; /* 使用视口高度，最多占用80%的屏幕高度 */
+  }
+  
+  /* 箭头旋转动画 */
+  .toc-arrow.rotated {
+    transform: rotate(180deg);
+  }
+  
+  /* 自定义滚动条样式 - 使用更柔和的颜色 */
+  .toc-content::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .toc-content::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .toc-content::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+  }
+  
+  .dark .toc-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  
+  .toc-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.4);
+  }
+  
+  .dark .toc-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+  }
+</style>
+
+<script>
+  // 初始化目录功能
+  function initTableOfContents() {
+    const tocToggle = document.querySelector('.toc-toggle');
+    const tocContent = document.querySelector('.toc-content');
+    const tocArrow = document.querySelector('.toc-arrow');
+    
+    // 重置目录状态为收起
+    if (tocContent && tocArrow) {
+      tocContent.classList.remove('expanded');
+      tocArrow.classList.remove('rotated');
+    }
+    
+    // 点击展开/收起功能
+    if (tocToggle && tocContent && tocArrow) {
+      // 移除旧的事件监听器（如果存在）
+      tocToggle.replaceWith(tocToggle.cloneNode(true));
+      const newTocToggle = document.querySelector('.toc-toggle');
+      const newTocArrow = document.querySelector('.toc-arrow');
+      
+      newTocToggle.addEventListener('click', () => {
+        if (tocContent.classList.contains('expanded')) {
+          // 收起
+          tocContent.classList.remove('expanded');
+          newTocArrow.classList.remove('rotated');
+        } else {
+          // 展开
+          tocContent.classList.add('expanded');
+          newTocArrow.classList.add('rotated');
+        }
+      });
+    }
+    
+    // 高亮当前阅读位置
+    const observeHeadings = () => {
+      const headings = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]');
+      const tocLinks = document.querySelectorAll('.toc-link');
+      
+      if (headings.length === 0 || tocLinks.length === 0) return;
+      
+      // 清除之前的观察器
+      if (window.tocObserver) {
+        window.tocObserver.disconnect();
+      }
+      
+      window.tocObserver = new IntersectionObserver((entries) => {
+        let activeId = '';
+        
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            activeId = entry.target.id;
+          }
+        });
+        
+        // 更新高亮链接
+        tocLinks.forEach(link => {
+          const headingId = link.getAttribute('data-heading-id');
+          if (headingId === activeId) {
+            link.classList.add('active');
+          } else {
+            link.classList.remove('active');
+          }
+        });
+      }, {
+        rootMargin: '-20% 0px -80% 0px',
+        threshold: 0
+      });
+      
+      headings.forEach(heading => window.tocObserver.observe(heading));
+    };
+    
+    // 延迟执行确保 DOM 完全加载
+    setTimeout(observeHeadings, 100);
+  }
+  
+  // 页面首次加载时初始化
+  document.addEventListener('DOMContentLoaded', initTableOfContents);
+  
+  // 监听页面内容变化（用于SPA路由切换）
+  document.addEventListener('astro:page-load', initTableOfContents);
+  
+  // 备用方案：监听popstate事件（浏览器前进后退）
+  window.addEventListener('popstate', () => {
+    setTimeout(initTableOfContents, 100);
+  });
+  
+  // 平滑滚动功能
+  document.addEventListener('click', (e) => {
+    const tocLink = e.target.closest('.toc-link');
+    if (tocLink) {
+      e.preventDefault();
+      const targetId = tocLink.getAttribute('href').substring(1);
+      const targetElement = document.getElementById(targetId);
+      
+      if (targetElement) {
+        targetElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+        
+        // 更新 URL
+        history.pushState(null, null, `#${targetId}`);
+      }
+    }
+  });
+</script>

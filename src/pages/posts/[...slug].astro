@@ -2,6 +2,7 @@
 import path from "node:path";
 import License from "@components/misc/License.astro";
 import Markdown from "@components/misc/Markdown.astro";
+import TableOfContents from "@components/TableOfContents.astro";  // 目录组件
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
@@ -95,12 +96,15 @@ const jsonLd = {
                 {!entry.data.image && <div class="border-[var(--line-divider)] border-dashed border-b-[1px] mb-5"></div>}
             </div>
 
-            <!-- always show cover as long as it has one -->
+            <!-- 新添加的目录组件 -->
+            <div class="onload-animation">
+                <TableOfContents headings={headings} />
+            </div>
 
+            <!-- always show cover as long as it has one -->
             {entry.data.image &&
                 <ImageWrapper id="post-cover" src={entry.data.image} basePath={path.join("content/posts/", getDir(entry.id))} class="mb-8 rounded-xl banner-container onload-animation"/>
             }
-
 
             <Markdown class="mb-6 markdown-content onload-animation">
                 <Content />
