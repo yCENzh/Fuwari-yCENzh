@@ -30,19 +30,13 @@ interface Props {
 
 let { title, banner, description, lang, setOGTypeArticle } = Astro.props;
 
-// apply a class to the body element to decide the height of the banner, only used for initial page load
-// Swup can update the body for each page visit, but it's after the page transition, causing a delay for banner height change
-// so use Swup hooks instead to change the height immediately when a link is clicked
 const isHomePage = pathsEqual(Astro.url.pathname, url("/"));
 
-// defines global css variables
-// why doing this in Layout instead of GlobalStyles: https://github.com/withastro/astro/issues/6728#issuecomment-1502203757
 const configHue = siteConfig.themeColor.hue;
 if (!banner || typeof banner !== "string" || banner.trim() === "") {
 	banner = siteConfig.banner.src;
 }
 
-// TODO don't use post cover as banner for now
 banner = siteConfig.banner.src;
 
 const enableBanner = siteConfig.banner.enable;
@@ -57,7 +51,6 @@ if (title) {
 const favicons: Favicon[] =
 	siteConfig.favicon.length > 0 ? siteConfig.favicon : defaultFavicons;
 
-// const siteLang = siteConfig.lang.replace('_', '-')
 if (!lang) {
 	lang = `${siteConfig.lang}`;
 }
@@ -77,8 +70,9 @@ const bannerOffset =
 	  data-overlayscrollbars-initialize
 >
 	<head>
-                <script defer src="https://umami.14131413.xyz/script.js" data-website-id="79b06c28-877c-4eeb-8c6e-8a5ce1119ed2"></script>
-                <script defer src="https://cloud.umami.is/script.js" data-website-id="a1a1f897-326f-4e68-a6f0-54e9dc361522"></script>
+		<!-- ✅ [优化] 使用 partytown 将 Umami 脚本移出主线程，防止网络延迟阻塞页面切换 -->
+		<script type="text/partytown" src="https://umami.14131413.xyz/script.js" data-website-id="79b06c28-877c-4eeb-8c6e-8a5ce1119ed2"></script>
+		<script type="text/partytown" src="https://cloud.umami.is/script.js" data-website-id="a1a1f897-326f-4e68-a6f0-54e9dc361522"></script>
 
 		<title>{pageTitle}</title>
 
@@ -142,8 +136,7 @@ const bannerOffset =
 		<style define:vars={{
 			configHue,
 			'page-width': `${PAGE_WIDTH}rem`,
-		}}></style>  <!-- defines global css variables. This will be applied to <html> <body> and some other elements idk why -->
-
+		}}></style>
 
 		<slot name="head"></slot>
 
@@ -156,7 +149,6 @@ const bannerOffset =
 		<ConfigCarrier></ConfigCarrier>
 		<slot />
 
-		<!-- increase the page height during page transition to prevent the scrolling animation from jumping -->
 		<div id="page-height-extend" class="hidden h-[300vh]"></div>
 	</body>
 </html>
@@ -168,6 +160,7 @@ const bannerOffset =
 }}>
 @tailwind components;
 @layer components {
+	/* --- 这是你原来的 Tailwind 组件层样式，保持不变 --- */
 	.enable-banner.is-home #banner-wrapper {
 		@apply h-[var(--banner-height-home)] translate-y-[var(--banner-height-extend)]
 	}
@@ -194,18 +187,53 @@ const bannerOffset =
 		@apply opacity-0 -translate-y-16
 	}
 }
+
+/* --- 从这里开始，是新添加的滚动条修复代码 --- */
+
+/* 解决 Expressive Code 代码块滚动条与圆角冲突的问题 */
+  
+/* 1. 为代码块容器增加底部内边距，给滚动条留出空间 */
+.expressive-code {
+  padding-bottom: 0.75rem !important;
+}
+
+/* 2. 自定义滚动条样式，使其更美观、更纤细 */
+.expressive-code::-webkit-scrollbar {
+  height: 8px; /* 水平滚动条的高度 */
+  background-color: transparent; /* 滚动条轨道背景透明 */
+}
+
+/* 3. 定义滚动条滑块的样式 */
+.expressive-code::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 128, 128, 0.3); /* 滑块颜色，使用半透明灰色 */
+  border-radius: 4px; /* 为滑块本身也添加圆角 */
+  border: 2px solid transparent; /* 创建一个“边框”，使滑块看起来更窄 */
+  background-clip: content-box;
+}
+
+.expressive-code::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(128, 128, 128, 0.5); /* 鼠标悬停时颜色加深 */
+}
+
+/* 针对暗黑模式的优化（可选） */
+:root.dark .expressive-code::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+:root.dark .expressive-code::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
 </style>
 
+<!-- ✅ [优化] 将所有客户端脚本合并到一个地方，并进行优化 -->
 <script>
 import 'overlayscrollbars/overlayscrollbars.css';
-import {
-	OverlayScrollbars,
-	// ScrollbarsHidingPlugin,
-	// SizeObserverPlugin,
-	// ClickScrollPlugin
-} from 'overlayscrollbars';
-import {getHue, getStoredTheme, setHue, setTheme} from "../utils/setting-utils";
-import {pathsEqual, url} from "../utils/url-utils";
+import { OverlayScrollbars } from 'overlayscrollbars';
+import PhotoSwipeLightbox from "photoswipe/lightbox";
+import "photoswipe/style.css";
+import { getHue, getStoredTheme, setHue, setTheme } from "../utils/setting-utils";
+import { pathsEqual, url } from "../utils/url-utils";
 import {
 	BANNER_HEIGHT,
 	BANNER_HEIGHT_HOME,
@@ -214,309 +242,90 @@ import {
 } from "../constants/constants";
 import { siteConfig } from '../config';
 
-/* Preload fonts */
-// (async function() {
-// 	try {
-// 		await Promise.all([
-// 			document.fonts.load("400 1em Roboto"),
-// 			document.fonts.load("700 1em Roboto"),
-// 		]);
-// 		document.body.classList.remove("hidden");
-// 	} catch (error) {
-// 		console.log("Failed to load fonts:", error);
-// 	}
-// })();
+const bannerEnabled = !!document.getElementById('banner-wrapper');
+let lightbox; // PhotoSwipe instance
 
-/* TODO This is a temporary solution for style flicker issue when the transition is activated */
-/* issue link: https://github.com/withastro/astro/issues/8711, the solution get from here too */
-/* update: fixed in Astro 3.2.4 */
-/*
-function disableAnimation() {
-	const css = document.createElement('style')
-	css.appendChild(
-		document.createTextNode(
-			`*{
-              -webkit-transition:none!important;
-              -moz-transition:none!important;
-              -o-transition:none!important;
-              -ms-transition:none!important;
-              transition:none!important
-              }`
-		)
-	)
-	document.head.appendChild(css)
-
-	return () => {
-		// Force restyle
-		;(() => window.getComputedStyle(document.body))()
-
-		// Wait for next tick before removing
-		setTimeout(() => {
-			document.head.removeChild(css)
-		}, 1)
-	}
-}
-*/
-
-const bannerEnabled = !!document.getElementById('banner-wrapper')
-
-function setClickOutsideToClose(panel: string, ignores: string[]) {
+function setClickOutsideToClose(panel, ignores) {
 	document.addEventListener("click", event => {
 		let panelDom = document.getElementById(panel);
 		let tDom = event.target;
-		if (!(tDom instanceof Node)) return;		// Ensure the event target is an HTML Node
+		if (!(tDom instanceof Node)) return;
 		for (let ig of ignores) {
 			let ie = document.getElementById(ig)
 			if (ie == tDom || (ie?.contains(tDom))) {
 				return;
 			}
 		}
-		panelDom!.classList.add("float-panel-closed");
+		panelDom?.classList.add("float-panel-closed");
 	});
 }
-setClickOutsideToClose("display-setting", ["display-setting", "display-settings-switch"])
-setClickOutsideToClose("nav-menu-panel", ["nav-menu-panel", "nav-menu-switch"])
-setClickOutsideToClose("search-panel", ["search-panel", "search-bar", "search-switch"])
-
 
 function loadTheme() {
-	const theme = getStoredTheme()
-	setTheme(theme)
+	const theme = getStoredTheme();
+	setTheme(theme);
 }
 
 function loadHue() {
-	setHue(getHue())
+	setHue(getHue());
 }
 
+/**
+ * ✅ [优化] 按需初始化 KaTeX 公式的自定义滚动条
+ * 只有当页面上存在 .katex-display 元素时，才会执行相关逻辑。
+ */
 function initCustomScrollbar() {
 	const bodyElement = document.querySelector('body');
-	if (!bodyElement) return;
-	OverlayScrollbars(
-		// docs say that a initialization to the body element would affect native functionality like window.scrollTo
-		// but just leave it here for now
-		{
-			target: bodyElement,
-			cancel: {
-				nativeScrollbarsOverlaid: true,    // don't initialize the overlay scrollbar if there is a native one
-			}
-		}, {
-		scrollbars: {
-			theme: 'scrollbar-base scrollbar-auto py-1',
-			autoHide: 'move',
-			autoHideDelay: 500,
-			autoHideSuspend: false,
-		},
-	});
+	if (bodyElement && !bodyElement.hasAttribute('data-overlayscrollbars-initialize')) {
+		OverlayScrollbars(
+			{ target: bodyElement, cancel: { nativeScrollbarsOverlaid: true } },
+			{ scrollbars: { theme: 'scrollbar-base scrollbar-auto py-1', autoHide: 'move', autoHideDelay: 500 } }
+		);
+	}
 
-	const katexElements = document.querySelectorAll('.katex-display') as NodeListOf<HTMLElement>;
+	const katexElements = document.querySelectorAll('.katex-display');
+	if (katexElements.length === 0) {
+		return; // 如果页面没有 KaTeX 公式，直接返回，避免不必要的性能开销
+	}
 
-	const katexObserverOptions = {
-		root: null,
-		rootMargin: '100px',
-		threshold: 0.1
-	};
-
-	const processKatexElement = (element: HTMLElement) => {
-		if (!element.parentNode) return;
-		if (element.hasAttribute('data-scrollbar-initialized')) return;
-
+	const katexObserverOptions = { root: null, rootMargin: '100px', threshold: 0.1 };
+	const processKatexElement = (element) => {
+		if (!element.parentNode || element.hasAttribute('data-scrollbar-initialized')) return;
 		const container = document.createElement('div');
 		container.className = 'katex-display-container';
 		container.setAttribute('aria-label', 'scrollable container for formulas');
-
 		element.parentNode.insertBefore(container, element);
 		container.appendChild(element);
-
 		OverlayScrollbars(container, {
-			scrollbars: {
-				theme: 'scrollbar-base scrollbar-auto',
-				autoHide: 'leave',
-				autoHideDelay: 500,
-				autoHideSuspend: false
-			}
+			scrollbars: { theme: 'scrollbar-base scrollbar-auto', autoHide: 'leave', autoHideDelay: 500 }
 		});
-
 		element.setAttribute('data-scrollbar-initialized', 'true');
 	};
 
 	const katexObserver = new IntersectionObserver((entries, observer) => {
 		entries.forEach(entry => {
 			if (entry.isIntersecting) {
-			processKatexElement(entry.target as HTMLElement);
-			observer.unobserve(entry.target);
+				processKatexElement(entry.target);
+				observer.unobserve(entry.target);
 			}
 		});
 	}, katexObserverOptions);
 
-	katexElements.forEach(element => {
-		katexObserver.observe(element);
-	});
+	katexElements.forEach(element => katexObserver.observe(element));
 }
 
-function showBanner() {
-	if (!siteConfig.banner.enable) return;
-
-	const banner = document.getElementById('banner');
-	if (!banner) {
-		console.error('Banner element not found');
-		return;
-	}
-
-	banner.classList.remove('opacity-0', 'scale-105');
-}
-
-function init() {
-	// disableAnimation()()		// TODO
-	loadTheme();
-	loadHue();
-	initCustomScrollbar();
-	showBanner();
-}
-
-/* Load settings when entering the site */
-init();
-
-const setup = () => {
-	// TODO: temp solution to change the height of the banner
-/*
-	window.swup.hooks.on('animation:out:start', () => {
-		const path = window.location.pathname
-		const body = document.querySelector('body')
-		if (path[path.length - 1] === '/' && !body.classList.contains('is-home')) {
-			body.classList.add('is-home')
-		} else if (path[path.length - 1] !== '/' && body.classList.contains('is-home')) {
-			body.classList.remove('is-home')
-		}
-	})
-*/
-	window.swup.hooks.on('link:click', () => {
-		// Remove the delay for the first time page load
-		document.documentElement.style.setProperty('--content-delay', '0ms')
-
-		// prevent elements from overlapping the navbar
-		if (!bannerEnabled) {
-			return
-		}
-		let threshold = window.innerHeight * (BANNER_HEIGHT / 100) - 72 - 16
-		let navbar = document.getElementById('navbar-wrapper')
-		if (!navbar || !document.body.classList.contains('lg:is-home')) {
-			return
-		}
-		if (document.body.scrollTop >= threshold || document.documentElement.scrollTop >= threshold) {
-			navbar.classList.add('navbar-hidden')
-		}
-	})
-	window.swup.hooks.on('content:replace', initCustomScrollbar)
-	window.swup.hooks.on('visit:start', (visit: {to: {url: string}}) => {
-		// change banner height immediately when a link is clicked
-		const bodyElement = document.querySelector('body')
-		if (pathsEqual(visit.to.url, url('/'))) {
-			bodyElement!.classList.add('lg:is-home');
-		} else {
-			bodyElement!.classList.remove('lg:is-home');
-		}
-
-		// increase the page height during page transition to prevent the scrolling animation from jumping
-		const heightExtend = document.getElementById('page-height-extend')
-		if (heightExtend) {
-			heightExtend.classList.remove('hidden')
-		}
-
-		// Hide the TOC while scrolling back to top
-		let toc = document.getElementById('toc-wrapper');
-		if (toc) {
-			toc.classList.add('toc-not-ready')
-		}
-	});
-	window.swup.hooks.on('page:view', () => {
-		// hide the temp high element when the transition is done
-		const heightExtend = document.getElementById('page-height-extend')
-		if (heightExtend) {
-			heightExtend.classList.remove('hidden')
-		}
-	});
-	window.swup.hooks.on('visit:end', (_visit: {to: {url: string}}) => {
-		setTimeout(() => {
-			const heightExtend = document.getElementById('page-height-extend')
-			if (heightExtend) {
-				heightExtend.classList.add('hidden')
-			}
-
-            // Just make the transition looks better
-            const toc = document.getElementById('toc-wrapper');
-            if (toc) {
-                toc.classList.remove('toc-not-ready')
-            }
-        }, 200)
-	});
-}
-if (window?.swup?.hooks) {
-	setup()
-} else {
-	document.addEventListener('swup:enable', setup)
-}
-
-let backToTopBtn = document.getElementById('back-to-top-btn');
-let toc = document.getElementById('toc-wrapper');
-let navbar = document.getElementById('navbar-wrapper')
-function scrollFunction() {
-	let bannerHeight = window.innerHeight * (BANNER_HEIGHT / 100)
-
-	if (backToTopBtn) {
-		if (document.body.scrollTop > bannerHeight || document.documentElement.scrollTop > bannerHeight) {
-			backToTopBtn.classList.remove('hide')
-		} else {
-			backToTopBtn.classList.add('hide')
-		}
-	}
-
-	if (bannerEnabled && toc) {
-		if (document.body.scrollTop > bannerHeight || document.documentElement.scrollTop > bannerHeight) {
-			toc.classList.remove('toc-hide')
-		} else {
-			toc.classList.add('toc-hide')
-		}
-	}
-
-	if (!bannerEnabled) return
-	if (navbar) {
-		const NAVBAR_HEIGHT = 72
-		const MAIN_PANEL_EXCESS_HEIGHT = MAIN_PANEL_OVERLAPS_BANNER_HEIGHT * 16			// The height the main panel overlaps the banner
-
-		let bannerHeight = BANNER_HEIGHT
-		if (document.body.classList.contains('lg:is-home') && window.innerWidth >= 1024) {
-			bannerHeight = BANNER_HEIGHT_HOME
-		}
-		let threshold = window.innerHeight * (bannerHeight / 100) - NAVBAR_HEIGHT - MAIN_PANEL_EXCESS_HEIGHT - 16
-		if (document.body.scrollTop >= threshold || document.documentElement.scrollTop >= threshold) {
-			navbar.classList.add('navbar-hidden')
-		} else {
-			navbar.classList.remove('navbar-hidden')
-		}
-	}
-}
-window.onscroll = scrollFunction
-
-window.onresize = () => {
-	// calculate the --banner-height-extend, which needs to be a multiple of 4 to avoid blurry text
-	let offset = Math.floor(window.innerHeight * (BANNER_HEIGHT_EXTEND / 100));
-	offset = offset - offset % 4;
-	document.documentElement.style.setProperty('--banner-height-extend', `${offset}px`);
-}
-
-</script>
-
-<script>
-import PhotoSwipeLightbox from "photoswipe/lightbox"
-import "photoswipe/style.css"
-
-let lightbox: PhotoSwipeLightbox
-let pswp = import("photoswipe")
-
+/**
+ * ✅ [优化] 按需初始化 PhotoSwipe 图片灯箱
+ * 只有当页面上存在符合条件的图片时，才创建实例。
+ */
 function createPhotoSwipe() {
+    const gallerySelector = ".custom-md img, #post-cover img";
+	if (!document.querySelector(gallerySelector)) {
+		return; // 如果页面上没有图片，则不初始化灯箱，节省性能
+	}
+
 	lightbox = new PhotoSwipeLightbox({
-		gallery: ".custom-md img, #post-cover img",
-		pswpModule: () => pswp,
+		gallery: gallerySelector,
+		pswpModule: () => import("photoswipe"),
 		closeSVG: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff"><path d="M480-424 284-228q-11 11-28 11t-28-11q-11-11-11-28t11-28l196-196-196-196q-11-11-11-28t11-28q11-11 28-11t28 11l196 196 196-196q11-11 28-11t28 11q11 11 11 28t-11 28L536-480l196 196q11 11 11 28t-11 28q-11 11-28 11t-28-11L480-424Z"/></svg>',
 		zoomSVG: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff"><path d="M340-540h-40q-17 0-28.5-11.5T260-580q0-17 11.5-28.5T300-620h40v-40q0-17 11.5-28.5T380-700q17 0 28.5 11.5T420-660v40h40q17 0 28.5 11.5T500-580q0 17-11.5 28.5T460-540h-40v40q0 17-11.5 28.5T380-460q-17 0-28.5-11.5T340-500v-40Zm40 220q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l224 224q11 11 11 28t-11 28q-11 11-28 11t-28-11L532-372q-30 24-69 38t-83 14Zm0-80q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/></svg>',
 		padding: { top: 20, bottom: 20, left: 20, right: 20 },
@@ -526,44 +335,171 @@ function createPhotoSwipe() {
 		imageClickAction: 'close',
 		tapAction: 'close',
 		doubleTapAction: 'zoom',
-	})
+	});
 
 	lightbox.addFilter("domItemData", (itemData, element) => {
 		if (element instanceof HTMLImageElement) {
-			itemData.src = element.src
-
-			itemData.w = Number(element.naturalWidth || window.innerWidth)
-			itemData.h = Number(element.naturalHeight || window.innerHeight)
-
-			itemData.msrc = element.src
+			itemData.src = element.src;
+			itemData.w = Number(element.naturalWidth || window.innerWidth);
+			itemData.h = Number(element.naturalHeight || window.innerHeight);
+			itemData.msrc = element.src;
 		}
+		return itemData;
+	});
 
-		return itemData
-	})
-
-	lightbox.init()
+	lightbox.init();
 }
 
-const setup = () => {
-	if (!lightbox) {
-		createPhotoSwipe()
+function showBanner() {
+	if (!siteConfig.banner.enable) return;
+	const banner = document.getElementById('banner');
+	if (!banner) return;
+	banner.classList.remove('opacity-0', 'scale-105');
+}
+
+// 页面滚动时的处理函数
+function scrollFunction() {
+	const backToTopBtn = document.getElementById('back-to-top-btn');
+	const toc = document.getElementById('toc-wrapper');
+	const navbar = document.getElementById('navbar-wrapper');
+	const bannerHeight = window.innerHeight * (BANNER_HEIGHT / 100);
+
+	if (backToTopBtn) {
+		if (document.body.scrollTop > bannerHeight || document.documentElement.scrollTop > bannerHeight) {
+			backToTopBtn.classList.remove('hide');
+		} else {
+			backToTopBtn.classList.add('hide');
+		}
 	}
-	window.swup.hooks.on("page:view", () => {
-		createPhotoSwipe()
-	})
 
-	window.swup.hooks.on(
-		"content:replace",
-		() => {
-			lightbox?.destroy?.()
-		},
-		{ before: true },
-	)
+	if (bannerEnabled && toc) {
+		if (document.body.scrollTop > bannerHeight || document.documentElement.scrollTop > bannerHeight) {
+			toc.classList.remove('toc-hide');
+		} else {
+			toc.classList.add('toc-hide');
+		}
+	}
+
+	if (bannerEnabled && navbar) {
+		const NAVBAR_HEIGHT = 72;
+		const MAIN_PANEL_EXCESS_HEIGHT = MAIN_PANEL_OVERLAPS_BANNER_HEIGHT * 16;
+		let currentBannerHeight = BANNER_HEIGHT;
+		if (document.body.classList.contains('lg:is-home') && window.innerWidth >= 1024) {
+			currentBannerHeight = BANNER_HEIGHT_HOME;
+		}
+		const threshold = window.innerHeight * (currentBannerHeight / 100) - NAVBAR_HEIGHT - MAIN_PANEL_EXCESS_HEIGHT - 16;
+		if (document.body.scrollTop >= threshold || document.documentElement.scrollTop >= threshold) {
+			navbar.classList.add('navbar-hidden');
+		} else {
+			navbar.classList.remove('navbar-hidden');
+		}
+	}
 }
 
+// 浏览器窗口大小变化时的处理函数
+function resizeFunction() {
+	let offset = Math.floor(window.innerHeight * (BANNER_HEIGHT_EXTEND / 100));
+	offset = offset - offset % 4;
+	document.documentElement.style.setProperty('--banner-height-extend', `${offset}px`);
+}
+
+/**
+ * 核心初始化函数
+ * 在首次加载和每次 swup 页面切换后运行
+ */
+function initPageContent() {
+	initCustomScrollbar();
+	createPhotoSwipe();
+}
+
+/**
+ * 设置 swup 钩子，用于处理客户端路由
+ */
+function setupSwupHooks() {
+	if (!window.swup) return;
+
+	window.swup.hooks.on('link:click', () => {
+		document.documentElement.style.setProperty('--content-delay', '0ms');
+		if (!bannerEnabled) return;
+		let threshold = window.innerHeight * (BANNER_HEIGHT / 100) - 72 - 16;
+		let navbar = document.getElementById('navbar-wrapper');
+		if (!navbar || !document.body.classList.contains('lg:is-home')) return;
+		if (document.body.scrollTop >= threshold || document.documentElement.scrollTop >= threshold) {
+			navbar.classList.add('navbar-hidden');
+		}
+	});
+    
+	window.swup.hooks.on('content:replace', () => {
+        // 在替换内容前，销毁旧的灯箱实例
+		lightbox?.destroy?.();
+        lightbox = null;
+	}, { before: true });
+
+	window.swup.hooks.on('page:view', () => {
+        // 页面切换动画完成后，为新内容初始化脚本
+        initPageContent();
+        
+        // 恢复页面高度
+		const heightExtend = document.getElementById('page-height-extend');
+		if (heightExtend) heightExtend.classList.remove('hidden');
+
+        const toc = document.getElementById('toc-wrapper');
+        if (toc) toc.classList.remove('toc-not-ready');
+	});
+
+	window.swup.hooks.on('visit:start', (visit) => {
+		const bodyElement = document.querySelector('body');
+		if (pathsEqual(visit.to.url, url('/'))) {
+			bodyElement?.classList.add('lg:is-home');
+		} else {
+			bodyElement?.classList.remove('lg:is-home');
+		}
+		const heightExtend = document.getElementById('page-height-extend');
+		if (heightExtend) heightExtend.classList.remove('hidden');
+		const toc = document.getElementById('toc-wrapper');
+		if (toc) toc.classList.add('toc-not-ready');
+	});
+
+	window.swup.hooks.on('visit:end', () => {
+		setTimeout(() => {
+			const heightExtend = document.getElementById('page-height-extend');
+			if (heightExtend) heightExtend.classList.add('hidden');
+		}, 200);
+	});
+}
+
+/**
+ * 网站总入口函数
+ * 设置所有一次性的事件监听器和钩子
+ */
+function initializeSite() {
+	// 加载主题和颜色配置
+	loadTheme();
+	loadHue();
+
+	// 设置一次性的点击监听
+	setClickOutsideToClose("display-setting", ["display-setting", "display-settings-switch"]);
+	setClickOutsideToClose("nav-menu-panel", ["nav-menu-panel", "nav-menu-switch"]);
+	setClickOutsideToClose("search-panel", ["search-panel", "search-bar", "search-switch"]);
+	
+    // 显示 Banner
+    showBanner();
+
+	// 绑定全局滚动和窗口大小变化事件
+	window.onscroll = scrollFunction;
+	window.onresize = resizeFunction;
+
+	// 设置 Swup 导航钩子
+	setupSwupHooks();
+
+	// 首次加载页面时，执行内容初始化
+	initPageContent();
+}
+
+// 启动逻辑：等待 swup 可用后，初始化所有功能
 if (window.swup) {
-	setup()
+	initializeSite();
 } else {
-	document.addEventListener("swup:enable", setup)
+	document.addEventListener('swup:enable', initializeSite);
 }
 </script>
