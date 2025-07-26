@@ -160,7 +160,6 @@ const bannerOffset =
 }}>
 @tailwind components;
 @layer components {
-	/* --- 这是你原来的 Tailwind 组件层样式，保持不变 --- */
 	.enable-banner.is-home #banner-wrapper {
 		@apply h-[var(--banner-height-home)] translate-y-[var(--banner-height-extend)]
 	}
@@ -187,43 +186,6 @@ const bannerOffset =
 		@apply opacity-0 -translate-y-16
 	}
 }
-
-/* --- 从这里开始，是新添加的滚动条修复代码 --- */
-
-/* 解决 Expressive Code 代码块滚动条与圆角冲突的问题 */
-  
-/* 1. 为代码块容器增加底部内边距，给滚动条留出空间 */
-.expressive-code {
-  padding-bottom: 0.75rem !important;
-}
-
-/* 2. 自定义滚动条样式，使其更美观、更纤细 */
-.expressive-code::-webkit-scrollbar {
-  height: 8px; /* 水平滚动条的高度 */
-  background-color: transparent; /* 滚动条轨道背景透明 */
-}
-
-/* 3. 定义滚动条滑块的样式 */
-.expressive-code::-webkit-scrollbar-thumb {
-  background-color: rgba(128, 128, 128, 0.3); /* 滑块颜色，使用半透明灰色 */
-  border-radius: 4px; /* 为滑块本身也添加圆角 */
-  border: 2px solid transparent; /* 创建一个“边框”，使滑块看起来更窄 */
-  background-clip: content-box;
-}
-
-.expressive-code::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(128, 128, 128, 0.5); /* 鼠标悬停时颜色加深 */
-}
-
-/* 针对暗黑模式的优化（可选） */
-:root.dark .expressive-code::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-:root.dark .expressive-code::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.4);
-}
-
 </style>
 
 <!-- ✅ [优化] 将所有客户端脚本合并到一个地方，并进行优化 -->

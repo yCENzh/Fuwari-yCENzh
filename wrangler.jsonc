@@ -1,9 +1,9 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "fuwari",
-  // 更新为今天的日期
-  "compatibility_date": "2025-07-04",
+  "name": "my-astro-app",
+  "compatibility_date": "2025-07-26",
   "assets": {
-    "directory": "./dist"
+    "directory": "./dist",
+    "not_found_handling": "404-page" // 如果你有自定义的 `src/pages/404.astro` 页面
   }
 }
