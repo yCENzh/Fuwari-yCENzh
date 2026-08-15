@@ -1,0 +1,28 @@
+---
+import type { GetStaticPaths } from "astro";
+import Pagination from "../components/control/Pagination.astro";
+import PostPage from "../components/PostPage.astro";
+import { siteConfig } from "../config";
+import { PAGE_SIZE } from "../constants/constants";
+import MainGridLayout from "../layouts/MainGridLayout.astro";
+import { getSortedPostsWithMetadata } from "../utils/content-utils";
+
+export const getStaticPaths = (async ({ paginate }) => {
+	const allBlogPosts = await getSortedPostsWithMetadata();
+	return paginate(allBlogPosts, { pageSize: PAGE_SIZE });
+}) satisfies GetStaticPaths;
+// https://github.com/withastro/astro/issues/6507#issuecomment-1489916992
+
+const { page } = Astro.props;
+
+const len = page.data.length;
+
+const homeDescription =
+	"yCENzh 的个人博客，分享技术与网络折腾经验、随笔与生活记录。";
+---
+
+<MainGridLayout title={page.currentPage > 1 ? `第 ${page.currentPage} 页` : undefined} description={homeDescription}>
+    <h1 class="sr-only">{siteConfig.title}{page.currentPage > 1 ? ` - 第 ${page.currentPage} 页` : ""}</h1>
+    <PostPage page={page}></PostPage>
+    <Pagination class="mx-auto onload-animation" page={page} style={`animation-delay: calc(var(--content-delay) + ${(len)*50}ms)`}></Pagination>
+</MainGridLayout>

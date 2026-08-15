@@ -1,0 +1,41 @@
+---
+import { Icon } from "astro-icon/components";
+import Giscus from "../components/misc/Giscus.astro";
+import friendsData from "../config/friends.json";
+import MainGridLayout from "../layouts/MainGridLayout.astro";
+
+// 从JSON文件加载友链数据
+const friends = friendsData;
+---
+<MainGridLayout title="友链" description="yCENzh 博客的友情链接页面，收录各位朋友或好玩的网站。" >
+    <h1 class="sr-only">友链</h1>
+    <div class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32">
+        <div class="card-base z-10 px-9 py-6 relative w-full ">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-8 my-4">
+                {friends.map((friend) => (
+                    <div class="flex flex-nowrap items-stretch h-28 gap-4 rounded-(--radius-large)">
+                        <div class="w-28 h-28 shrink-0 rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-900">
+                            <img src={friend.icon} alt={`${friend.name}的头像`} class="w-full h-full object-cover">
+                        </div>
+                        <div class="grow w-full">
+                            <div class="font-bold transition text-lg text-neutral-900 dark:text-neutral-100 mb-1">{friend.name}</div>
+                            <div class="text-50 text-sm font-medium">{friend.description}</div>
+                        </div>
+                        <a href={friend.url} target="_blank" rel="noopener noreferrer" class="flex btn-regular w-13 rounded-lg bg-(--enter-btn-bg) hover:bg-(--enter-btn-bg-hover) active:bg-(--enter-btn-bg-active) active:scale-95">
+                            <Icon name="material-symbols:chevron-right-rounded" class="transition text-(--primary) text-4xl mx-auto" />
+                        </a>
+                    </div>
+                ))}
+            </div>
+            <div class="mt-8 text-center">
+                <p class="text-sm text-neutral-600 dark:text-neutral-400">The end Ciallo~</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="flex w-full rounded-(--radius-large) overflow-hidden relative mt-4">
+        <div class="card-base z-10 px-6 md:px-9 py-6 relative w-full">
+            <Giscus />
+        </div>
+    </div>
+</MainGridLayout>

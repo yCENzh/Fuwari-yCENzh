@@ -1,0 +1,167 @@
+@import 'tailwindcss';
+
+@import './variables.css';
+@import './navbar.css';
+@import './scrollbar.css';
+@import './transition.css';
+@import './markdown.utilities.css';
+@import './markdown-extend.css';
+@import './expressive-code.css';
+
+@plugin '@tailwindcss/typography';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans:
+    var(--font-roboto), Roboto, sans-serif, ui-sans-serif, system-ui, sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-mono:
+    var(--font-jetbrains-mono), 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+@utility card-base {
+  @apply rounded-(--radius-large) overflow-hidden bg-(--card-bg) transition;
+}
+
+@utility expand-animation {
+  @apply relative before:ease-out before:transition active:bg-none hover:before:bg-(--btn-plain-bg-hover) active:before:bg-(--btn-plain-bg-active) z-0
+        before:absolute before:rounded-[inherit] before:inset-0 before:scale-[0.85] hover:before:scale-100 before:-z-10;
+}
+
+@utility link-lg {
+  @apply transition rounded-md p-1.5 -m-1.5 expand-animation;
+}
+
+@utility float-panel {
+  @apply top-21 rounded-(--radius-large) overflow-hidden bg-(--float-panel-bg) transition shadow-xl dark:shadow-none;
+}
+
+@utility float-panel-closed {
+  @apply -translate-y-1 opacity-0 pointer-events-none;
+}
+
+@utility btn-card {
+  @apply transition flex items-center justify-center bg-(--card-bg) hover:bg-(--btn-card-bg-hover)
+        active:bg-(--btn-card-bg-active);
+}
+
+@utility btn-card-disabled {
+  @apply pointer-events-none text-black/10 dark:text-white/10;
+}
+
+@utility btn-plain {
+  @apply transition relative flex items-center justify-center bg-none
+        text-black/75 hover:text-(--primary) dark:text-white/75 dark:hover:text-(--primary);
+}
+
+@utility btn-plain-base {
+  @apply hover:bg-(--btn-plain-bg-hover) active:bg-(--btn-plain-bg-active);
+}
+
+@utility btn-plain-scale {
+  @apply expand-animation;
+}
+
+@utility btn-regular {
+  @apply transition flex items-center justify-center bg-(--btn-regular-bg) hover:bg-(--btn-regular-bg-hover) active:bg-(--btn-regular-bg-active)
+        text-(--btn-content) dark:text-white/75;
+}
+
+@utility toc-hide {
+  @apply opacity-0 pointer-events-none;
+}
+
+@utility hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility text-90 {
+  @apply text-black/90 dark:text-white/90;
+}
+
+@utility text-75 {
+  @apply text-black/75 dark:text-white/75;
+}
+
+@utility text-50 {
+  @apply text-black/50 dark:text-white/50;
+}
+
+@utility text-30 {
+  @apply text-black/30 dark:text-white/30;
+}
+
+@utility meta-icon {
+  @apply w-8 h-8 transition rounded-md flex items-center justify-center bg-(--btn-regular-bg)
+        text-(--btn-content) mr-2;
+}
+
+@layer components {
+    h1, h2, h3, h4, h5, h6, p, a, span, li, ul, ol, blockquote, code, pre, table, th, td, strong {
+        @apply transition;
+    }
+
+    #toc-inner-wrapper {
+        mask-image: linear-gradient(to bottom, transparent 0%, black 2rem, black calc(100% - 2rem), transparent 100%);
+    }
+}
+
+.custom-md img, #post-cover img {
+    @apply cursor-zoom-in;
+}
+
+::selection {
+    background-color: var(--selection-bg);
+}
+
+.dash-line {
+    position: relative;
+}
+
+.dash-line::before {
+    content: "";
+    position: absolute;
+    width: 10%;
+    height: 100%;
+    left: calc(50% - 1px);
+    border-left: 2px dashed var(--line-color);
+    pointer-events: none;
+    transition: all 0.3s;
+    transform: translateY(-50%);
+}
+
+.custom-md spoiler {
+  @apply bg-(--primary) hover:bg-transparent px-1 py-0.5 overflow-hidden rounded-md transition-all duration-150;
+
+  &:not(:hover) {
+    color: var(--primary);
+  }
+
+  &:not(:hover) * {
+    color: var(--primary);
+  }
+}

@@ -1,0 +1,92 @@
+---
+import path from "node:path";
+
+interface Props {
+	id?: string;
+	src: string;
+	class?: string;
+	alt?: string;
+	position?: string;
+	basePath?: string;
+	fetchpriority?: "high" | "low" | "auto";
+}
+
+import { Image } from "astro:assets";
+import { siteConfig } from "../../config";
+import { url } from "../../utils/url-utils";
+
+const {
+	id,
+	src,
+	alt,
+	position = "center",
+	basePath = "/",
+	fetchpriority,
+} = Astro.props;
+const className = Astro.props.class;
+
+const isLocal = !(
+	src.startsWith("/") ||
+	src.startsWith("http") ||
+	src.startsWith("https") ||
+	src.startsWith("data:")
+);
+const isPublic = src.startsWith("/");
+
+const imageFiles = import.meta.glob<ImageMetadata>(
+	"../../**/*.{png,jpg,jpeg,webp,gif,avif,svg}",
+	{ import: "default" },
+);
+
+let img: ImageMetadata | undefined;
+if (isLocal) {
+	const normalizedPath = path
+		.normalize(path.join("../../", basePath, src))
+		.replace(/\\/g, "/");
+	const file = imageFiles[normalizedPath];
+	if (!file) {
+		console.error(
+			`\n[ERROR] Image file not found: ${normalizedPath.replace("../../", "src/")}`,
+		);
+	} else {
+		img = await file();
+	}
+}
+
+const imageClass =
+	"image-content w-full h-full object-cover opacity-0 transition-all duration-500 ease-out";
+const imageStyle = `object-position: ${position}`;
+---
+<div id={id} class:list={[className, 'overflow-hidden relative image-wrapper group']} style={`--theme-hue: ${siteConfig.themeColor.hue}`} data-image-wrapper>
+    <div class="loading-bar absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-1 bg-gray-400/20 dark:bg-gray-600/30 z-10 rounded-full overflow-hidden transition-opacity duration-500 ease-out">
+        <div class="loading-progress h-full w-8 rounded-full"></div>
+    </div>
+    
+    <div class="transition absolute inset-0 dark:bg-black/10 bg-opacity-50 pointer-events-none"></div>
+    {isLocal && img && <Image src={img} alt={alt || ""} class={imageClass} style={imageStyle} loading={fetchpriority === "high" ? "eager" : "lazy"} fetchpriority={fetchpriority} data-image-element />}
+    {!isLocal && <img src={isPublic ? url(src) : src} alt={alt || ""} class={imageClass} style={imageStyle} loading={fetchpriority === "high" ? "eager" : "lazy"} fetchpriority={fetchpriority} data-image-element />}
+</div>
+
+<style>
+    .loading-progress {
+        background-color: oklch(0.70 0.14 var(--theme-hue));
+        animation: loading-progress 1.5s ease-in-out infinite;
+    }
+
+    @keyframes loading-progress {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(400%); }
+    }
+
+    .image-content.loaded {
+        @apply opacity-100;
+    }
+
+    .loading-bar.hide {
+        @apply opacity-0 pointer-events-none;
+    }
+
+    .group:has(.image-content.loaded):hover .image-content {
+        transform: scale(1.05);
+    }
+</style>

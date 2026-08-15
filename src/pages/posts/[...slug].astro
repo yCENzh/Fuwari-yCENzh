@@ -1,0 +1,147 @@
+---
+import { render } from "astro:content";
+import path from "node:path";
+import License from "@components/misc/License.astro";
+import Markdown from "@components/misc/Markdown.astro";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { getPostNav, getSortedPosts } from "@utils/content-utils";
+import { getDir, getPostUrlBySlug } from "@utils/url-utils";
+import { Icon } from "astro-icon/components";
+import { licenseConfig } from "@/config";
+import Lightbox from "../../components/lightbox.astro";
+import Giscus from "../../components/misc/Giscus.astro";
+import ImageWrapper from "../../components/misc/ImageWrapper.astro";
+import PostMetadata from "../../components/PostMeta.astro";
+import { profileConfig } from "../../config";
+import { formatDateToYYYYMMDD } from "../../utils/date-utils";
+
+export async function getStaticPaths() {
+	const blogEntries = await getSortedPosts();
+	return blogEntries.map((entry) => ({
+		params: { slug: entry.id.replace(/\/index$/, "") },
+		props: { entry, navPromise: getPostNav(entry.id) },
+	}));
+}
+
+const { entry, navPromise } = Astro.props;
+const nav = await navPromise;
+const { Content, headings, remarkPluginFrontmatter } = await render(entry);
+
+const jsonLd = {
+	"@context": "https://schema.org",
+	"@type": "BlogPosting",
+	headline: entry.data.title,
+	description: entry.data.description || entry.data.title,
+	keywords: entry.data.tags,
+	author: {
+		"@type": "Person",
+		name: profileConfig.name,
+		url: Astro.site,
+	},
+	datePublished: formatDateToYYYYMMDD(entry.data.published),
+	inLanguage: "zh-CN",
+	// TODO include cover image here
+};
+---
+<MainGridLayout banner={entry.data.image} title={entry.data.title} description={entry.data.description} setOGTypeArticle={true} headings={headings} postData={{ title: entry.data.title, published: entry.data.published, updated: entry.data.updated, tags: entry.data.tags, image: entry.data.image }}>
+    <script is:inline slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)}></script>
+    <div class="flex w-full rounded-(--radius-large) overflow-hidden relative mb-4">
+        <div id="post-container" class:list={["card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full ",
+            {}
+        ]}>
+            <!-- word count and reading time -->
+            <div class="flex flex-row text-black/30 dark:text-white/30 gap-5 mb-3 transition onload-animation">
+                <div class="flex flex-row items-center">
+                    <div class="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 text-black/50 dark:text-white/50 flex items-center justify-center mr-2">
+                        <Icon name="material-symbols:notes-rounded"></Icon>
+                    </div>
+                    <div class="text-sm">{remarkPluginFrontmatter.words} 字</div>
+                </div>
+                <div class="flex flex-row items-center">
+                    <div class="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 text-black/50 dark:text-white/50 flex items-center justify-center mr-2">
+                        <Icon name="material-symbols:schedule-outline-rounded"></Icon>
+                    </div>
+                    <div class="text-sm">
+                        {remarkPluginFrontmatter.minutes} min
+                    </div>
+                </div>
+            </div>
+
+            <!-- title -->
+            <div class="relative onload-animation">
+                <h1
+                    data-pagefind-body data-pagefind-weight="10" data-pagefind-meta="title"
+                    class="transition w-full block font-bold mb-3
+                    text-3xl md:text-[2.25rem]/[2.75rem]
+                    text-black/90 dark:text-white/90
+                    md:before:w-1 before:h-5 before:rounded-md before:bg-(--primary)
+                    before:absolute before:top-3 before:-left-4.5
+                ">
+                    {entry.data.title}
+                </h1>
+            </div>
+
+            <!-- metadata -->
+            <div class="onload-animation">
+                <PostMetadata
+                        class="mb-5"
+                        published={entry.data.published}
+                        updated={entry.data.updated}
+                        tags={entry.data.tags}
+                        category={entry.data.category}
+                ></PostMetadata>
+                {!entry.data.image && <div class="border-(--line-divider) border-dashed border-b mb-5"></div>}
+            </div>
+
+            <!-- always show cover as long as it has one -->
+            {entry.data.image &&
+                <ImageWrapper id="post-cover" src={entry.data.image} basePath={path.join("content/posts/", getDir(entry.id))} alt={`${entry.data.title} 的文章封面`} class="mb-8 rounded-xl banner-container onload-animation"/>
+            }
+
+            <Markdown class="mb-6 markdown-content onload-animation">
+                <Content />
+            </Markdown>
+
+            {licenseConfig.enable && <License title={entry.data.title} pubDate={entry.data.published} slug={entry.id.replace(/\/index$/, "")} class="mb-6 rounded-xl license-container onload-animation"></License>}
+        </div>
+    </div>
+
+    <div class="flex flex-col md:flex-row justify-between mb-4 gap-4 overflow-hidden w-full">
+        {nav.next ? (
+            <a href={getPostUrlBySlug(nav.next.slug)}
+               class="w-full font-bold overflow-hidden active:scale-95">
+                <div class="btn-card rounded-2xl w-full h-15 max-w-full px-4 flex items-center justify-start! gap-4" >
+                    <Icon name="material-symbols:chevron-left-rounded" class="text-[2rem] text-(--primary)" />
+                    <div class="overflow-hidden transition text-ellipsis whitespace-nowrap max-w-[calc(100%-3rem)] text-black/75 dark:text-white/75">
+                        {nav.next.title}
+                    </div>
+                </div>
+            </a>
+        ) : (
+            <div class="w-full"></div>
+        )}
+
+        {nav.prev ? (
+            <a href={getPostUrlBySlug(nav.prev.slug)}
+               class="w-full font-bold overflow-hidden active:scale-95">
+                <div class="btn-card rounded-2xl w-full h-15 max-w-full px-4 flex items-center justify-end! gap-4">
+                    <div class="overflow-hidden transition text-ellipsis whitespace-nowrap max-w-[calc(100%-3rem)] text-black/75 dark:text-white/75">
+                        {nav.prev.title}
+                    </div>
+                    <Icon name="material-symbols:chevron-right-rounded" class="text-[2rem] text-(--primary)" />
+                </div>
+            </a>
+        ) : (
+            <div class="w-full"></div>
+        )}
+    </div>
+
+    <div class="flex w-full rounded-(--radius-large) overflow-hidden relative mb-4">
+        <div class="card-base z-10 px-6 md:px-9 py-6 relative w-full">
+            <Giscus />
+        </div>
+    </div>
+
+    <Lightbox />
+
+</MainGridLayout>

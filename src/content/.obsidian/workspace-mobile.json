@@ -1,0 +1,185 @@
+{
+	"main": {
+		"id": "49135231fbb661a4",
+		"type": "split",
+		"children": [
+			{
+				"id": "2534e8ce6372cc43",
+				"type": "tabs",
+				"children": [
+					{
+						"id": "6897c23cb945003f",
+						"type": "leaf",
+						"state": {
+							"type": "markdown",
+							"state": {
+								"file": "posts/fuwari.md",
+								"mode": "source",
+								"source": false
+							},
+							"icon": "lucide-file",
+							"title": "fuwari"
+						}
+					}
+				]
+			}
+		],
+		"direction": "vertical"
+	},
+	"left": {
+		"id": "1755c5ae387d6b9b",
+		"type": "mobile-drawer",
+		"children": [
+			{
+				"id": "4cf3a49fc9aa8962",
+				"type": "leaf",
+				"state": {
+					"type": "file-explorer",
+					"state": {
+						"sortOrder": "alphabetical",
+						"autoReveal": false
+					},
+					"icon": "lucide-folder-closed",
+					"title": "文件列表"
+				}
+			},
+			{
+				"id": "6e955ddc1c1ce8e3",
+				"type": "leaf",
+				"state": {
+					"type": "search",
+					"state": {
+						"query": "",
+						"matchingCase": false,
+						"explainSearch": false,
+						"collapseAll": false,
+						"extraContext": false,
+						"sortOrder": "alphabetical"
+					},
+					"icon": "lucide-search",
+					"title": "搜索"
+				}
+			},
+			{
+				"id": "bb856687268701bd",
+				"type": "leaf",
+				"state": {
+					"type": "tag",
+					"state": {
+						"sortOrder": "frequency",
+						"useHierarchy": true,
+						"showSearch": false,
+						"searchQuery": ""
+					},
+					"icon": "lucide-tags",
+					"title": "标签"
+				}
+			},
+			{
+				"id": "e7740d5e1824d1dc",
+				"type": "leaf",
+				"state": {
+					"type": "all-properties",
+					"state": {
+						"sortOrder": "frequency",
+						"showSearch": false,
+						"searchQuery": ""
+					},
+					"icon": "lucide-archive",
+					"title": "添加笔记属性"
+				}
+			},
+			{
+				"id": "5e42d3483e5d62e4",
+				"type": "leaf",
+				"state": {
+					"type": "bookmarks",
+					"state": {},
+					"icon": "lucide-bookmark",
+					"title": "书签"
+				}
+			}
+		],
+		"currentTab": 0
+	},
+	"right": {
+		"id": "a6b739966a2ed7a3",
+		"type": "mobile-drawer",
+		"children": [
+			{
+				"id": "5cd1bc8f8f3302ba",
+				"type": "leaf",
+				"state": {
+					"type": "backlink",
+					"state": {
+						"file": "posts/fuwari.md",
+						"collapseAll": false,
+						"extraContext": false,
+						"sortOrder": "alphabetical",
+						"showSearch": false,
+						"searchQuery": "",
+						"backlinkCollapsed": false,
+						"unlinkedCollapsed": true
+					},
+					"icon": "links-coming-in",
+					"title": "反向链接"
+				}
+			},
+			{
+				"id": "42f7d0c91b87b583",
+				"type": "leaf",
+				"state": {
+					"type": "outgoing-link",
+					"state": {
+						"file": "posts/fuwari.md",
+						"linksCollapsed": false,
+						"unlinkedCollapsed": true
+					},
+					"icon": "links-going-out",
+					"title": "出链"
+				}
+			},
+			{
+				"id": "cf01c58710bca6a9",
+				"type": "leaf",
+				"state": {
+					"type": "outline-solid",
+					"state": {
+						"file": "posts/fuwari.md",
+						"followCursor": false,
+						"showSearch": false,
+						"searchQuery": ""
+					},
+					"icon": "lucide-list",
+					"title": "大纲"
+				}
+			}
+		],
+		"currentTab": 0
+	},
+	"left-ribbon": {
+		"hiddenItems": {
+			"switcher:打开快速切换": false,
+			"graph:查看关系图谱": false,
+			"canvas:新建白板": false,
+			"daily-notes:打开/创建今天的日记": false,
+			"templates:插入模板": false,
+			"command-palette:打开命令面板": false,
+			"bases:创建新数据库": false
+		}
+	},
+	"active": "6897c23cb945003f",
+	"lastOpenFiles": [
+		"local-doc.html.md",
+		"posts/Essay/ubuntu_install_fuck_nvidia.md",
+		"posts/星星落下的地方.md",
+		"posts/星绘.md",
+		"posts/HelloWorld.md",
+		"posts/private/1.md",
+		"未命名.md",
+		"spec/about.md",
+		"posts/MC/download 3.md",
+		"posts/MC/download 2.md",
+		"posts/MC/download 1.md"
+	]
+}

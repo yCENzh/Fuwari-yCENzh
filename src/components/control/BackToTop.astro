@@ -1,0 +1,22 @@
+---
+import { Icon } from "astro-icon/components";
+---
+
+<button id="back-to-top-btn" aria-label="Back to Top"
+    class="btn-card fixed right-6 bottom-40 w-15 h-15 z-[100] border-none rounded-2xl opacity-60 cursor-pointer shadow-[0_2px_10px_rgba(0,0,0,0.15)] text-(--primary) hover:opacity-100 hover:shadow-[0_4px_15px_rgba(0,0,0,0.2)] active:scale-90 max-md:right-4 max-md:bottom-24 max-md:w-12 max-md:h-12 max-md:rounded-xl hide">
+    <Icon name="material-symbols:keyboard-arrow-up-rounded" class="w-7 h-7 max-md:w-6 max-md:h-6" />
+</button>
+
+<style>
+#back-to-top-btn.hide {
+    @apply scale-0 opacity-0 pointer-events-none;
+}
+</style>
+
+<script>
+// 显隐由 Layout.astro 的全局滚动逻辑统一管理（滚过 banner 后显示）
+const btn = document.getElementById('back-to-top-btn');
+btn?.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+</script>

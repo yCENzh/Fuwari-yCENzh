@@ -1,0 +1,188 @@
+---
+import { type CollectionEntry, render } from "astro:content";
+import path from "node:path";
+import { Icon } from "astro-icon/components";
+import { getDir, getPostUrlBySlug } from "../utils/url-utils";
+import ImageWrapper from "./misc/ImageWrapper.astro";
+import PostMetadata from "./PostMeta.astro";
+
+// 预计算的元数据类型
+interface PostCardMetadata {
+	excerpt: string;
+	words: number;
+	minutes: number;
+}
+
+// 定义组件属性接口
+interface Props {
+	entry: CollectionEntry<"posts">;
+	style: string;
+	metadata?: PostCardMetadata;
+	url?: string;
+	class?: string;
+}
+
+// 解构组件属性
+const { entry, style, metadata: precomputedMetadata } = Astro.props;
+const url = Astro.props.url ?? getPostUrlBySlug(entry.id);
+const className = Astro.props.class;
+
+const {
+	title,
+	published,
+	updated,
+	tags,
+	category,
+	image,
+	description,
+	pinned,
+} = entry.data;
+
+// 如果有预计算的元数据则使用，否则渲染文章获取（用于详情页等场景）
+const remarkPluginFrontmatter =
+	precomputedMetadata || (await render(entry)).remarkPluginFrontmatter;
+
+// 检查是否有封面图片
+const hasCover = image !== undefined && image !== null && image !== "";
+
+// 封面图片宽度（CSS变量）
+const coverWidth = "28%";
+---
+
+<!-- 文章卡片容器 -->
+<div 
+  class:list={[
+    "card-base flex flex-col-reverse md:flex-col w-full rounded-(--radius-large) overflow-hidden relative", 
+    className
+  ]} 
+  style={style}
+>
+  <!-- 内容区域 -->
+  <div 
+    class:list={[
+      "pl-6 md:pl-9 pr-6 md:pr-2 pt-6 md:pt-7 pb-6 relative", 
+      {
+        "w-full md:w-[calc(100%-52px-12px)]": !hasCover,
+        "w-full md:w-[calc(100%-var(--coverWidth)-12px)]": hasCover
+      }
+    ]}
+  >
+    {pinned && <div class="absolute top-2 left-2 text-(--primary)">
+        <Icon name="material-symbols:keep-rounded" class="w-5 h-5" />
+    </div>}
+    <h2 
+      class="transition w-full block font-bold mb-3 text-3xl text-90">
+      <a 
+        href={url}
+        class="group hover:text-(--primary) dark:hover:text-(--primary)
+          active:text-(--title-active) dark:active:text-(--title-active)
+          before:w-1 before:h-5 before:rounded-md before:bg-(--primary)
+          before:absolute before:top-[35px] before:left-[18px] before:hidden md:before:block"
+      >
+      {title}
+      <!-- 移动端箭头图标 -->
+      <Icon 
+        class="inline text-[2rem] text-(--primary) md:hidden translate-y-0.5 absolute" 
+        name="material-symbols:chevron-right-rounded" 
+      ></Icon>
+      <!-- 桌面端悬停箭头图标 -->
+      <Icon 
+        class="text-(--primary) text-[2rem] transition hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" 
+        name="material-symbols:chevron-right-rounded"
+      ></Icon>
+      </a>
+    </h2>
+
+    <!-- 文章元数据 -->
+    <PostMetadata 
+      published={published} 
+      updated={updated} 
+      tags={tags} 
+      category={category} 
+      hideTagsForMobile={true} 
+      hideUpdateDate={true} 
+      class="mb-4"
+    ></PostMetadata>
+
+    <!-- 文章描述 -->
+    <div 
+      class:list={[
+        "transition text-75 mb-3.5 pr-4", 
+        {"line-clamp-2 md:line-clamp-1": !(description || remarkPluginFrontmatter.excerpt)}
+      ]}
+    >
+      {description || remarkPluginFrontmatter.excerpt}
+    </div>
+
+    <!-- 字数统计和阅读时间 -->
+    <div class="flex flex-row text-black/30 dark:text-white/30 gap-5 mb-3 transition onload-animation">
+      <div class="flex flex-row items-center">
+        <div class="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 text-black/50 dark:text-white/50 flex items-center justify-center mr-2">
+          <Icon name="material-symbols:notes-rounded"></Icon>
+        </div>
+        <div class="text-sm">{remarkPluginFrontmatter.words} 字</div>
+      </div>
+      <div class="flex flex-row items-center">
+        <div class="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 text-black/50 dark:text-white/50 flex items-center justify-center mr-2">
+          <Icon name="material-symbols:schedule-outline-rounded"></Icon>
+        </div>
+        <div class="text-sm">
+          {remarkPluginFrontmatter.minutes} min
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 封面图片区域 -->
+  {hasCover && (
+    <a 
+      href={url} 
+      aria-label={title}
+      class:list={[
+        "group",
+        "max-h-[20vh] md:max-h-none mx-4 mt-4 -mb-2 md:mb-0 md:mx-0 md:mt-0",
+        "md:w-(--coverWidth) relative md:absolute md:top-3 md:bottom-3 md:right-3 rounded-xl overflow-hidden active:scale-95"
+      ]}
+    >
+      <!-- 封面图片遮罩层 -->
+      <div class="absolute pointer-events-none z-10 w-full h-full group-hover:bg-black/30 group-active:bg-black/50 transition"></div>
+      <!-- 封面图片悬停时的箭头图标 -->
+      <div class="absolute pointer-events-none z-20 w-full h-full flex items-center justify-center">
+        <Icon 
+          name="material-symbols:chevron-right-rounded"
+          class="transition opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 text-white text-5xl"
+        ></Icon>
+      </div>
+      <!-- 封面图片组件 -->
+      <ImageWrapper 
+        src={image} 
+        basePath={path.join("content/posts/", getDir(entry.id))} 
+        alt={`${title} 的文章封面`}
+        class="w-full h-full"
+      ></ImageWrapper>
+    </a>
+  )}
+
+  <!-- 无封面时的进入按钮 -->
+  {!hasCover && (
+    <a 
+      href={url} 
+      aria-label={title} 
+      class="!hidden md:flex! btn-regular w-13
+        absolute right-3 top-3 bottom-3 rounded-xl bg-(--enter-btn-bg)
+        hover:bg-(--enter-btn-bg-hover) active:bg-(--enter-btn-bg-active) active:scale-95"
+    >
+      <Icon 
+        name="material-symbols:chevron-right-rounded"
+        class="transition text-(--primary) text-4xl mx-auto"
+      ></Icon>
+    </a>
+  )}
+</div>
+
+<!-- 文章卡片之间的分隔线（仅在移动端显示） -->
+<div class="transition border-t border-dashed mx-6 border-black/10 dark:border-white/15 last:border-t-0 md:hidden"></div>
+
+<!-- 定义CSS变量（用于封面宽度） -->
+<style define:vars={{ coverWidth }}>
+</style>

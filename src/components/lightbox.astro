@@ -1,0 +1,83 @@
+---
+---
+<script>
+import { onPageView, onVisitStart } from "./atoms/swup-hooks";
+const GALLERY_SELECTOR = ".custom-md img, #post-cover img";
+
+let fancyboxReady: Promise<typeof import("@fancyapps/ui")> | null = null;
+
+async function loadFancybox() {
+	if (!fancyboxReady) {
+		await import("@fancyapps/ui/dist/fancybox/fancybox.css");
+		fancyboxReady = import("@fancyapps/ui");
+	}
+	return fancyboxReady;
+}
+
+function decorateImages() {
+	for (const img of document.querySelectorAll<HTMLImageElement>(GALLERY_SELECTOR)) {
+		if (img.hasAttribute("data-fancybox")) continue;
+		img.setAttribute("data-fancybox", "gallery");
+		if (img.alt) img.setAttribute("data-caption", img.alt);
+		img.style.cursor = "zoom-in";
+	}
+}
+
+// 有图片 → 空闲时预加载 fancybox，用户点击时已就绪
+function preloadWhenIdle() {
+	const images = document.querySelectorAll<HTMLImageElement>(GALLERY_SELECTOR);
+	if (images.length === 0) return;
+
+	const idle = () => loadFancybox();
+	if ("requestIdleCallback" in window) {
+		requestIdleCallback(idle, { timeout: 2000 });
+	} else {
+		setTimeout(idle, 200);
+	}
+}
+
+// 首次点击时：如果 fancybox 已预加载好就直接打开，否则等加载完
+function onFirstClick(e: MouseEvent) {
+	const img = (e.target as HTMLElement).closest(GALLERY_SELECTOR);
+	if (!img) return;
+
+	e.preventDefault();
+	document.removeEventListener("click", onFirstClick, true);
+
+	loadFancybox().then(({ Fancybox }) => {
+		decorateImages();
+		Fancybox.bind("[data-fancybox]", {
+			dragToClose: false,
+			Toolbar: { display: { left: ["infobar"], middle: [], right: ["close"] } },
+			closeButton: false,
+			click: false,
+			dblclick: false,
+			wheel: "slide",
+			// biome-ignore lint/suspicious/noExplicitAny: @fancyapps/ui does not export OptionsType
+		} as any);
+		Fancybox.show([{ src: (img as HTMLImageElement).src, caption: img.getAttribute("data-caption") || "" }]);
+	});
+}
+
+document.addEventListener("click", onFirstClick, true);
+
+onPageView(() => {
+	decorateImages();
+	document.addEventListener("click", onFirstClick, true);
+	preloadWhenIdle();
+});
+
+onVisitStart(async () => {
+	if (!fancyboxReady) return;
+	const { Fancybox } = await fancyboxReady;
+	Fancybox.close();
+});
+
+// 首屏
+if (document.readyState === "loading") {
+	document.addEventListener("DOMContentLoaded", () => { decorateImages(); preloadWhenIdle(); }, { once: true });
+} else {
+	decorateImages();
+	preloadWhenIdle();
+}
+</script>

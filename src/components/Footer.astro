@@ -1,0 +1,29 @@
+---
+import { profileConfig } from "../config";
+import { url } from "../utils/url-utils";
+
+const currentYear = new Date().getFullYear();
+---
+
+<div class="border-t border-black/10 dark:border-white/15 my-10 border-dashed mx-32 max-md:mx-6"></div>
+
+<div class="border-dashed border-[oklch(85%_0.01_var(--hue))] dark:border-white/15 rounded-2xl mb-12 flex flex-col items-center justify-center px-6">
+    <div class="text-50 text-sm text-center max-md:text-[0.8125rem]">
+        <div>
+            &copy; <span id="copyright-year">{currentYear}</span> {profileConfig.name}. All Rights Reserved. /
+            <a class="no-underline relative px-1 hover:underline decoration-(--primary) underline-offset-1 text-(--primary) font-medium" target="_blank" href={url('rss.xml')}>RSS</a> /
+            <a class="no-underline relative px-1 hover:underline decoration-(--primary) underline-offset-1 text-(--primary) font-medium" target="_blank" href={url('sitemap-index.xml')}>Sitemap</a>
+        </div>
+        <div>
+            Powered by
+            <a class="no-underline relative px-1 hover:underline decoration-(--primary) underline-offset-1 text-(--primary) font-medium" target="_blank" href="https://astro.build/themes/details/asterris/">Astro</a> &
+            <a class="no-underline relative px-1 hover:underline decoration-(--primary) underline-offset-1 text-(--primary) font-medium" target="_blank" href="https://github.com/yCENzh/Fuwari-yCENzh">Fuwari</a>
+        </div>
+        <div>
+            <a class="no-underline relative px-1 hover:underline decoration-(--primary) underline-offset-1 text-(--primary) font-medium" target="_blank" href="https://icp.gov.moe/?keyword=20251413">萌ICP备20251413号</a>
+        </div>
+        <div>
+            <a class="no-underline relative px-1 hover:underline decoration-(--primary) underline-offset-1 text-(--primary) font-medium" target="_blank" href="https://www.travellings.cn/train.html">开往新世界-Travelling</a>
+        </div>
+    </div>
+</div>

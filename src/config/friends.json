@@ -1,0 +1,26 @@
+[
+	{
+		"name": "Astro",
+		"icon": "https://avatars.githubusercontent.com/u/44914786?s=48&v=4",
+		"description": "The web framework for content-driven websites. ⭐️ Star to support our work!",
+		"url": "https://github.com/withastro/astro"
+	},
+	{
+		"name": "鈴奈咲桜的Blog",
+		"icon": "https://q2.qlogo.cn/headimg_dl?dst_uin=2731443459&spec=0",
+		"description": "愛することを忘れないで",
+		"url": "https://blog.sakura.ink/"
+	},
+	{
+		"name": "yogurtsのblogs",
+		"icon": "https://yogurts.top/img/avatar.webp",
+		"description": "Yogurtsの博客",
+		"url": "https://yogurts.top/"
+	},
+	{
+		"name": "fishcpy的小破站",
+		"icon": "https://www.fis.ink/img/logo.png",
+		"description": "非淡泊无以明志，非宁静无以致远",
+		"url": "https://blog.fis.ink"
+	}
+]

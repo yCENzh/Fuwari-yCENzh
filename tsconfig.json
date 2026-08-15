@@ -1,0 +1,23 @@
+{
+	"extends": "astro/tsconfigs/strict",
+	"compilerOptions": {
+		"moduleResolution": "bundler",
+		"strictNullChecks": true,
+		"allowJs": false,
+		"declaration": true,
+		"plugins": [
+			{
+				"name": "@astrojs/ts-plugin"
+			}
+		],
+		"paths": {
+			"@assets/*": ["./src/assets/*"],
+			"@components/*": ["./src/components/*"],
+			"@constants/*": ["./src/constants/*"],
+			"@utils/*": ["./src/utils/*"],
+			"@layouts/*": ["./src/layouts/*"],
+			"@/*": ["./src/*"]
+		}
+	},
+	"include": [".astro/types.d.ts", "src/**/*"]
+}

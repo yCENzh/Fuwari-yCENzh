@@ -1,0 +1,161 @@
+@reference 'tailwindcss';
+
+@utility link {
+  @apply relative bg-none font-medium underline decoration-dashed decoration-1 underline-offset-4 inline-block;
+  color: var(--primary);
+  text-decoration-color: var(--link-underline);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  transition: background-color 0.2s ease, color 0.2s ease;
+
+  &:is(:hover, :active) {
+    text-decoration: none;
+    background-color: var(--btn-plain-bg-hover);
+  }
+}
+
+@utility custom-md {
+  /* Markdown 特定样式 */
+  h1 {
+    @apply text-3xl;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    .anchor {
+      @apply transition -m-0.5 ml-[0.2ch] p-0.5 select-none opacity-0 no-underline;
+
+      .anchor-icon {
+        @apply mx-[0.45ch];
+      }
+    }
+
+    &:hover {
+      .anchor {
+        @apply opacity-100;
+      }
+    }
+  }
+
+  a:not(.no-styling) {
+    @apply link;
+  }
+
+  code {
+    @apply bg-(--inline-code-bg) text-(--inline-code-color) px-1 py-0.5 rounded-md overflow-hidden;
+    font-family:
+      var(--font-jetbrains-mono),
+      'JetBrains Mono Variable',
+      ui-monospace,
+      SFMono-Regular,
+      Menlo,
+      Monaco,
+      Consolas,
+      Liberation Mono,
+      Courier New,
+      monospace;
+
+    &:before,
+    &:after {
+      content: none;
+    }
+  }
+
+  .expressive-code {
+    @apply my-4;
+
+    ::selection {
+      @apply bg-(--codeblock-selection);
+    }
+  }
+
+  ul,
+  ol {
+    li::marker {
+      @apply text-(--primary);
+    }
+  }
+
+  blockquote {
+    @apply not-italic border-transparent relative;
+    font-weight: inherit;
+
+    &:before {
+      @apply content-[''] absolute -left-1 block transition bg-(--btn-regular-bg) h-full w-1 rounded-full;
+    }
+
+    p:before,
+    p:after {
+      @apply content-none;
+    }
+  }
+
+  /* 表格样式 */
+  .table-wrapper {
+    @apply w-full overflow-x-auto m-0 rounded-(--radius-large);
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+      margin: 0 calc(var(--radius-large) + 2px);
+    }
+    &::-webkit-scrollbar-thumb {
+      background: var(--scrollbar-bg);
+      border-radius: 4px;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+      background: var(--scrollbar-bg-hover);
+    }
+    &::-webkit-scrollbar-thumb:active {
+      background: var(--scrollbar-bg-active);
+    }
+  }
+
+  table {
+    @apply w-full border-separate m-0 bg-(--card-bg);
+    border-spacing: 0;
+    border: 1px solid var(--line-divider);
+    border-radius: var(--radius-large);
+    overflow: hidden;
+  }
+
+  th,
+  td {
+    @apply px-4 py-3 whitespace-nowrap;
+    border-bottom: 1px solid var(--line-divider);
+    border-right: 1px solid var(--line-divider);
+    transition: none;
+  }
+
+  th {
+    background-color: var(--btn-regular-bg);
+    color: var(--btn-content);
+    font-weight: 600;
+    text-align: left;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+  th:last-child,
+  td:last-child {
+    border-right: none;
+  }
+
+  tr:hover td {
+    background-color: var(--btn-plain-bg-hover);
+    transition: none;
+  }
+
+  .katex-display-container {
+    @apply max-w-full overflow-x-auto my-4;
+  }
+}

@@ -1,0 +1,86 @@
+@reference "tailwindcss";
+
+.expressive-code {
+    .frame {
+        @apply !shadow-none;
+    }
+
+    pre, code {
+        font-feature-settings: "liga" 1, "calt" 1;
+    }
+
+    .title {
+        font-family: var(--font-jetbrains-mono), "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+     
+    /* 语言角标覆盖样式 */
+    [data-language]::before {
+        background: var(--ec-language-badge-bg) !important;
+    }
+
+    /* 复制按钮完整样式 - scoped 在 .expressive-code 内，特异性 (0,2,0) 可压过 expressive-code 的 all:revert */
+    .copy-btn {
+        all: initial;
+        @apply opacity-0 absolute h-8 w-8 top-3 right-3 rounded-lg transition-all ease-in-out z-20 cursor-pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--ec-copy-btn-bg);
+    }
+
+    .copy-btn:hover {
+        background: var(--ec-copy-btn-bg-hover);
+    }
+
+    .copy-btn:active {
+        scale: 0.9;
+    }
+
+    .copy-btn-icon {
+        @apply absolute top-1/2 left-1/2 transition -translate-x-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none;
+        fill: var(--btn-content);
+    }
+
+    .copy-btn .copy-icon {
+        @apply opacity-100;
+        fill: var(--btn-content);
+    }
+
+    .copy-btn .success-icon {
+        @apply opacity-0;
+        fill: var(--btn-content);
+    }
+
+    .copy-btn.success .copy-icon {
+        @apply opacity-0;
+        fill: var(--deep-text);
+    }
+
+    .copy-btn.success .success-icon {
+        @apply opacity-100;
+    }
+
+    /* 悬停时显示复制按钮 */
+    .frame:hover .copy-btn {
+        opacity: 1;
+    }
+
+    pre {
+        overflow-x: auto;
+
+        &::-webkit-scrollbar {
+            height: 12px;
+        }
+
+        &::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: var(--btn-content);
+            border-radius: 6px;
+        }
+
+        scrollbar-width: thin;
+    }
+}

@@ -1,0 +1,62 @@
+@reference 'tailwindcss';
+
+/* Native scrollbar styling (replaces OverlayScrollbars) */
+/* Uses ::-webkit-scrollbar only. scrollbar-color is intentionally NOT used
+   because Chromium ignores ::-webkit-scrollbar when scrollbar-color is active
+   (even inherited values from ancestors). Firefox will use its native scrollbar. */
+
+body::-webkit-scrollbar,
+.custom-md ::-webkit-scrollbar,
+.float-panel::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+
+body::-webkit-scrollbar-thumb,
+.custom-md ::-webkit-scrollbar-thumb,
+.float-panel::-webkit-scrollbar-thumb {
+	background: var(--scrollbar-bg);
+	border-radius: 9999px;
+}
+
+body::-webkit-scrollbar-thumb:hover,
+.custom-md ::-webkit-scrollbar-thumb:hover,
+.float-panel::-webkit-scrollbar-thumb:hover {
+	background: var(--scrollbar-bg-hover);
+}
+
+body::-webkit-scrollbar-track,
+.custom-md ::-webkit-scrollbar-track,
+.float-panel::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+/* Table wrapper scrollbar */
+.custom-md .table-wrapper::-webkit-scrollbar {
+	height: 6px;
+	width: 6px;
+}
+
+.custom-md .table-wrapper::-webkit-scrollbar-track {
+	background: transparent;
+	margin: 0 calc(var(--radius-large) + 2px);
+}
+
+.custom-md .table-wrapper::-webkit-scrollbar-thumb {
+	background: var(--scrollbar-bg);
+	border-radius: 4px;
+}
+
+.custom-md .table-wrapper::-webkit-scrollbar-thumb:hover {
+	background: var(--scrollbar-bg-hover);
+}
+
+.custom-md .table-wrapper::-webkit-scrollbar-thumb:active {
+	background: var(--scrollbar-bg-active);
+}
+
+/* KaTeX horizontal scroll */
+.katex-scrollable {
+	overflow-x: auto;
+	overflow-y: hidden;
+}

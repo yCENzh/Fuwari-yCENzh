@@ -1,0 +1,44 @@
+---
+import { Icon } from "astro-icon/components";
+import { licenseConfig, profileConfig } from "../../config";
+import { formatDateToYYYYMMDD } from "../../utils/date-utils";
+import { getPostUrlBySlug } from "../../utils/url-utils";
+
+interface Props {
+	title: string;
+	pubDate: Date;
+	slug: string;
+	class: string;
+}
+
+const { title, pubDate, slug } = Astro.props;
+const className = Astro.props.class;
+const profileConf = profileConfig;
+const licenseConf = licenseConfig;
+// 用 slug 生成文章相对路径，再拼接站点域名得到完整永久链接
+const siteBase = Astro.site?.href.replace(/\/$/, "") || "";
+const postUrl = siteBase + getPostUrlBySlug(slug);
+---
+<div class={`relative transition overflow-hidden bg-(--license-block-bg) py-5 px-6 ${className}`}>
+    <div class="transition font-bold text-black/75 dark:text-white/75">
+        {title}
+    </div>
+    <a href={postUrl} class="link text-(--primary) break-all block">
+        {postUrl}
+    </a>
+    <div class="flex gap-6 mt-2 flex-wrap">
+        <div class="min-w-0">
+            <div class="transition text-black/30 dark:text-white/30 text-sm">作者</div>
+            <div class="transition text-black/75 dark:text-white/75 line-clamp-2">{profileConf.name}</div>
+        </div>
+        <div class="min-w-0">
+            <div class="transition text-black/30 dark:text-white/30 text-sm">发布于</div>
+            <div class="transition text-black/75 dark:text-white/75 line-clamp-2">{formatDateToYYYYMMDD(pubDate)}</div>
+        </div>
+        <div class="min-w-0">
+            <div class="transition text-black/30 dark:text-white/30 text-sm">License</div>
+            <a href={licenseConf.url} target="_blank" class="link text-(--primary) line-clamp-2 break-all">{licenseConf.name}</a>
+        </div>
+    </div>
+    <Icon name="fa7-brands:creative-commons" class="transition text-[15rem] absolute pointer-events-none right-6 top-1/2 -translate-y-1/2 text-black/5 dark:text-white/5"></Icon>
+</div>

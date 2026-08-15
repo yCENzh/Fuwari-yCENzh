@@ -1,0 +1,425 @@
+---
+import { Font } from "astro:assets";
+import { profileConfig, siteConfig } from "@/config";
+import {
+	AUTO_MODE,
+	BANNER_HEIGHT,
+	BANNER_HEIGHT_EXTEND,
+	BANNER_HEIGHT_HOME,
+	DARK_MODE,
+	DEFAULT_THEME,
+	LIGHT_MODE,
+	PAGE_WIDTH,
+} from "../constants/constants";
+import { defaultFavicons } from "../constants/icon";
+import type { Favicon } from "../types/config";
+import { pathsEqual, url } from "../utils/url-utils";
+import "katex/dist/katex.css";
+import "../styles/main.css";
+
+interface Props {
+	title?: string;
+	banner?: string;
+	description?: string;
+	setOGTypeArticle?: boolean;
+	lang?: string;
+	postData?: {
+		title?: string;
+		published?: Date;
+		updated?: Date;
+		tags?: string[];
+		image?: string;
+	};
+}
+
+const { title, description, setOGTypeArticle, lang } = Astro.props;
+let { banner, postData } = Astro.props;
+
+const isHomePage = pathsEqual(Astro.url.pathname, url("/"));
+const configHue = siteConfig.themeColor.hue;
+const enableBanner = siteConfig.banner.enable;
+
+if (!banner || typeof banner !== "string" || banner.trim() === "") {
+	banner = siteConfig.banner.src;
+}
+
+// 文章数据（用于 OG 标签）- 优先使用 prop 传入的数据
+let pageData: {
+	title?: string;
+	published?: Date;
+	updated?: Date;
+	tags?: string[];
+	image?: string;
+} = postData || {};
+
+const formatDate = (date: Date | string | undefined): string | null => {
+	if (!date) return null;
+	if (date instanceof Date) {
+		return date.toISOString().split("T")[0];
+	}
+	if (typeof date === "string") {
+		return date.split("T")[0];
+	}
+	return null;
+};
+
+const publishedDate = formatDate(pageData.published);
+const updatedDate = formatDate(pageData.updated);
+const articleTags: string[] = pageData.tags || [];
+
+const pageTitle = title
+	? `${title} - ${siteConfig.title}`
+	: `${siteConfig.title} - ${siteConfig.subtitle}`;
+
+const favicons: Favicon[] =
+	siteConfig.favicon.length > 0 ? siteConfig.favicon : defaultFavicons;
+
+const siteLang = lang ?? "zh-CN";
+
+function resolveImageUrl(src: string | undefined): string {
+	if (!src) return siteConfig.banner.src;
+	if (src.startsWith("http")) return src;
+	if (src.startsWith("/")) return new URL(src, Astro.site).toString();
+	return src;
+}
+
+const bannerOffsetByPosition: Record<string, string> = {
+	top: `${BANNER_HEIGHT_EXTEND}vh`,
+	center: `${BANNER_HEIGHT_EXTEND / 2}vh`,
+	bottom: "0",
+};
+const bannerOffset =
+	bannerOffsetByPosition[siteConfig.banner.position ?? "center"];
+---
+
+<!DOCTYPE html>
+<html lang={siteLang} class="bg-(--page-bg) transition text-[14px] md:text-[16px]"
+>
+	<head>
+		<meta charset="UTF-8" />
+		<Font cssVariable="--font-roboto" preload />
+		<Font cssVariable="--font-jetbrains-mono" preload />
+
+		<!-- Preload critical resources for LCP optimization -->
+		{enableBanner && banner && (
+			<link rel="preload" as="image" href={banner.startsWith('/') ? url(banner) : banner} fetchpriority="high" />
+		)}
+
+		<script is:inline define:vars={{DEFAULT_THEME, LIGHT_MODE, DARK_MODE, AUTO_MODE, configHue}}>
+		(function() {
+			const theme = localStorage.getItem('theme') || DEFAULT_THEME;
+			const isDark = theme === DARK_MODE || 
+				(theme === AUTO_MODE && window.matchMedia('(prefers-color-scheme: dark)').matches);
+			document.documentElement.classList.toggle('dark', isDark);
+			
+			document.documentElement.style.setProperty('--hue', localStorage.getItem('hue') || configHue);
+		})();
+		</script>
+
+		<script is:inline type="text/javascript">
+			(function(c,l,a,r,i,t,y){
+				c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+				t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+				y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+			})(window, document, "clarity", "script", "tajp0d55h4");
+		</script>
+
+		<script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-D8YKHXY480"></script>
+		<script is:inline>
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){window.dataLayer.push(arguments);}
+			gtag('js', new Date());
+			gtag('config', 'G-D8YKHXY480');
+		</script>
+
+		<script is:inline defer src="https://cloud.umami.is/script.js" data-website-id="a1a1f897-326f-4e68-a6f0-54e9dc361522"></script>
+
+		<title>{pageTitle}</title>
+
+		<meta name="description" content={description || pageTitle}>
+		<meta name="author" content={profileConfig.name}>
+
+		<meta property="og:site_name" content={siteConfig.title}>
+		<meta property="og:url" content={Astro.url}>
+		<meta property="og:title" content={pageTitle}>
+		<meta property="og:description" content={description || pageTitle}>
+		<meta property="og:type" content={setOGTypeArticle ? "article" : "website"} />
+		<meta property="og:image" content={resolveImageUrl(banner)} data-swup-keep>
+		{publishedDate && <meta property="article:published_time" content={publishedDate}>}
+		{updatedDate && <meta property="article:modified_time" content={updatedDate}>}
+		{articleTags.map(tag => <meta property="article:tag" content={tag}>)}
+
+		<link rel="canonical" href={Astro.url}>
+
+		<link rel="dns-prefetch" href="https://api.iconify.design">
+		<link rel="preconnect" href="https://api.iconify.design" crossorigin>
+
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		{favicons.map(favicon => (
+			<link rel="icon"
+				  href={favicon.src.startsWith('/') ? url(favicon.src) : favicon.src}
+				  sizes={favicon.sizes}
+				  media={favicon.theme && `(prefers-color-scheme: ${favicon.theme})`}
+			/>
+		))}
+
+		<style define:vars={{
+			configHue,
+			'page-width': `clamp(${PAGE_WIDTH}rem, 75vw, 140rem)`,
+		}}></style>
+
+		<slot name="head"></slot>
+
+		<link rel="alternate" type="application/rss+xml" title={profileConfig.name} href={`${Astro.site}rss.xml`}/>
+	</head>
+	<body class="min-h-screen transition" class:list={[{"lg:is-home": isHomePage, "enable-banner": enableBanner}]}>
+		<slot />
+		<div id="page-height-extend" class="hidden h-[300vh]"></div>
+	</body>
+</html>
+
+<style is:global define:vars={{
+	bannerOffset,
+	'banner-height-home': `${BANNER_HEIGHT_HOME}vh`,
+	'banner-height': `${BANNER_HEIGHT}vh`,
+	'banner-height-extend': `${BANNER_HEIGHT_EXTEND}vh`,
+}}>
+@reference 'tailwindcss';
+@layer components {
+	.enable-banner #banner-wrapper {
+		@apply h-(--banner-height-home)
+	}
+	.enable-banner #banner {
+		@apply h-(--banner-height-home) translate-y-(--bannerOffset)
+	}
+	.enable-banner #top-row {
+		@apply h-[calc(var(--banner-height-home)-4.5rem)] transition-all duration-300
+	}
+	@media (min-width: 1024px) {
+		.enable-banner.lg\:is-home #banner-wrapper {
+			@apply h-(--banner-height-home) translate-y-(--banner-height-extend)
+		}
+		.enable-banner.lg\:is-home #banner {
+			@apply h-(--banner-height-home) translate-y-0
+		}
+		.enable-banner.lg\:is-home #main-grid {
+			@apply mt-[var(--banner-height-extend)];
+		}
+	}
+	.navbar-hidden {
+		@apply opacity-0 -translate-y-16
+	}
+}
+</style>
+
+<script>
+import { getHue, getStoredTheme, setHue, setTheme } from "../utils/setting-utils";
+import { pathsEqual, url } from "../utils/url-utils";
+import {
+	BANNER_HEIGHT,
+	BANNER_HEIGHT_HOME,
+	MAIN_PANEL_OVERLAPS_BANNER_HEIGHT
+} from "../constants/constants";
+import { onScrollThrottled } from "../components/atoms/scroll-observer";
+import { onLinkClick, onPageView, onVisitStart, onVisitEnd, type HookCallback } from "../components/atoms/swup-hooks";
+
+const NAVBAR_HEIGHT = 72;
+let scrollCleanup: (() => void) | null = null;
+
+// 缓存常用 DOM 元素引用
+let domRefs: {
+	backToTopBtn: HTMLElement | null;
+	tocWrapper: HTMLElement | null;
+	navbarWrapper: HTMLElement | null;
+	banner: HTMLElement | null;
+	pageHeightExtend: HTMLElement | null;
+} | null = null;
+
+function getDomRefs() {
+	if (!domRefs) {
+		domRefs = {
+			backToTopBtn: document.getElementById('back-to-top-btn'),
+			tocWrapper: document.getElementById('toc-wrapper'),
+			navbarWrapper: document.getElementById('navbar-wrapper'),
+			banner: document.getElementById('banner'),
+			pageHeightExtend: document.getElementById('page-height-extend'),
+		};
+	}
+	return domRefs;
+}
+
+function clearDomRefs() {
+	domRefs = null;
+}
+
+function getScrollTop(): number {
+	return document.documentElement.scrollTop || document.body.scrollTop;
+}
+
+function getBannerThreshold(forNavbar = false): number {
+	const isHome = document.body.classList.contains('lg:is-home') && window.innerWidth >= 1024;
+	const heightPercent = isHome ? BANNER_HEIGHT_HOME : BANNER_HEIGHT;
+	const bannerPx = window.innerHeight * (heightPercent / 100);
+
+	if (forNavbar) {
+		return bannerPx - NAVBAR_HEIGHT - (MAIN_PANEL_OVERLAPS_BANNER_HEIGHT * 16) - 16;
+	}
+	return bannerPx;
+}
+
+function isBannerEnabled(): boolean {
+	return !!document.getElementById('banner-wrapper');
+}
+function initKatexScrollbars() {
+	const elements = document.querySelectorAll('.katex-display:not([data-katex-scroll])');
+	elements.forEach(el => {
+		el.classList.add('katex-scrollable');
+		el.setAttribute('data-katex-scroll', 'true');
+	});
+}
+
+function initImageLoading() {
+	const wrappers = document.querySelectorAll('[data-image-wrapper]');
+	wrappers.forEach(wrapper => {
+		const img = wrapper.querySelector('[data-image-element]') as HTMLImageElement | null;
+		const loadingBar = wrapper.querySelector('.loading-bar');
+		if (!img || !loadingBar) return;
+
+		const markLoaded = () => {
+			img.classList.add('loaded');
+			setTimeout(() => loadingBar.classList.add('hide'), 300);
+		};
+
+		if (img.complete && img.naturalHeight !== 0) {
+			img.classList.add('loaded');
+			loadingBar.classList.add('hide');
+			return;
+		}
+
+		img.addEventListener('load', markLoaded, { once: true });
+		img.addEventListener('error', markLoaded, { once: true });
+	});
+}
+
+function showBanner() {
+	if (!document.body.classList.contains('enable-banner')) return;
+	getDomRefs().banner?.classList.remove('opacity-0', 'scale-105');
+}
+
+// Swup 导航时移除动画类，避免重复播放
+const stripOnloadAnimations = () => {
+	let animationsDone = false;
+	try {
+		animationsDone = sessionStorage.getItem('onloadAnimationsDone') === '1';
+	} catch {}
+
+	const animated = document.querySelectorAll('.onload-animation');
+	if (animationsDone) {
+		animated.forEach(el => el instanceof HTMLElement && el.classList.remove('onload-animation'));
+		return;
+	}
+
+	let finalized = false;
+	const finalize = () => {
+		if (finalized) return;
+		finalized = true;
+		try { sessionStorage.setItem('onloadAnimationsDone', '1'); } catch {}
+		animated.forEach(el => el instanceof HTMLElement && el.classList.remove('onload-animation'));
+	};
+
+	animated.forEach(el => {
+		if (!(el instanceof HTMLElement)) return;
+		el.addEventListener('animationend', finalize, { once: true });
+		const computed = window.getComputedStyle(el);
+		if (computed.animationDuration === '0s' || computed.animationName === 'none') finalize();
+	});
+};
+
+function handleScroll(scrollTop: number) {
+	const bannerHeight = getBannerThreshold();
+	const navbarThreshold = getBannerThreshold(true);
+	const refs = getDomRefs();
+
+	// 返回顶部按钮：banner 页用 banner 高度，非 banner 页用 100px
+	const bttThreshold = isBannerEnabled() ? bannerHeight : 100;
+	refs.backToTopBtn?.classList.toggle('hide', scrollTop <= bttThreshold);
+
+	if (isBannerEnabled()) {
+		refs.tocWrapper?.classList.toggle('toc-hide', scrollTop <= bannerHeight);
+		refs.navbarWrapper?.classList.toggle('navbar-hidden', scrollTop >= navbarThreshold);
+	}
+}
+
+function setupGlobalListenersOnce() {
+	if (scrollCleanup) scrollCleanup();
+	scrollCleanup = onScrollThrottled(handleScroll);
+}
+
+function initPage() {
+	const run = () => {
+		initKatexScrollbars();
+		initImageLoading();
+	};
+
+	if ('requestIdleCallback' in window) {
+		requestIdleCallback(run, { timeout: 200 });
+	} else {
+		setTimeout(run, 0);
+	}
+
+	showBanner();
+	stripOnloadAnimations();
+}
+
+onLinkClick(() => {
+	document.documentElement.style.setProperty('--content-delay', '0ms');
+	if (!isBannerEnabled()) return;
+
+	const { navbarWrapper } = getDomRefs();
+	if (navbarWrapper && document.body.classList.contains('lg:is-home') && getScrollTop() >= getBannerThreshold(true)) {
+		navbarWrapper.classList.add('navbar-hidden');
+	}
+});
+
+onPageView(() => {
+	initPage();
+	const refs = getDomRefs();
+	refs.pageHeightExtend?.classList.remove('hidden');
+	refs.tocWrapper?.classList.remove('toc-hide');
+});
+
+onVisitStart(((visit: { to: { url: string } }) => {
+	const isHome = pathsEqual(visit.to.url, url('/'));
+	document.body.classList.toggle('lg:is-home', isHome);
+
+	// 清除缓存，Swup 会替换 DOM 元素
+	clearDomRefs();
+	const refs = getDomRefs();
+	refs.pageHeightExtend?.classList.remove('hidden');
+	refs.tocWrapper?.classList.add('toc-hide');
+}) as HookCallback);
+
+onVisitEnd(() => {
+	// Swup navigating 标志偶尔卡住，无公开 API 重置，取巧绕过 protected
+	(window.swup as any)['navigating'] = false;
+	// 清除残留的过渡 CSS 类
+	document.documentElement.classList.remove('is-animating', 'is-changing');
+	const refs = getDomRefs();
+	setTimeout(() => refs.pageHeightExtend?.classList.add('hidden'), 200);
+});
+
+function main() {
+	setTheme(getStoredTheme());
+	setHue(getHue());
+
+	setupGlobalListenersOnce();
+	initPage();
+}
+
+if (window.swup) {
+	main();
+} else {
+	document.addEventListener('swup:enable', main);
+}
+</script>

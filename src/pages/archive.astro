@@ -1,0 +1,15 @@
+---
+import ArchivePanel from "@components/ArchivePanel.svelte";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { getSortedPostsList } from "../utils/content-utils";
+
+const sortedPostsList = await getSortedPostsList();
+---
+
+<MainGridLayout title="时间线" description="yCENzh 博客的完整文章时间线归档，按年份整理所有发布内容。">
+    <h1 class="sr-only">时间线</h1>
+    <div class="card-base px-8 py-6">
+        <ArchivePanel sortedPosts={sortedPostsList} client:visible></ArchivePanel>
+    </div>
+</MainGridLayout>
+
